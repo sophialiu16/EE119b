@@ -53,7 +53,9 @@ entity  SerialDivider  is
 		  -- digit to display (to 4:12 decoder)
         DecoderBit  :  out  std_logic_vector(4 downto 0);
 		  -- clock input signal
-        CLK         :  in   std_logic
+        CLK         :  in   std_logic;
+		  
+		  Done        :  out  std_logic
     );
 
 end  SerialDivider;
@@ -70,8 +72,8 @@ architecture  Behavioral  of  SerialDivider  is
 	 signal Quotient       :   std_logic_vector(NUM_BITS - 1 downto 0);
 	 
 	 -- signals for divisor and dividend input
-	 signal Divisor        :   std_logic_vector(NUM_BITS - 1 downto 0);
-	 signal Dividend       :   std_logic_vector(NUM_BITS - 1 downto 0);
+	 signal Divisor        :   std_logic_vector(NUM_BITS - 1 downto 0) := "00000000000000000101";--"00000000000000001011";
+	 signal Dividend       :   std_logic_vector(NUM_BITS - 1 downto 0) := "00000000000011100101";--"00000000000010001001";
 
     -- keypad signals
 	 -- have a key from the keypad
@@ -81,12 +83,12 @@ architecture  Behavioral  of  SerialDivider  is
 
     -- LED multiplexing signals
 	 -- multiplex counter to divide down to 1 Khz
-    signal  MuxCntr     :  unsigned(9 downto 0);     -- 9 downto 0?TODO
+    signal  MuxCntr     :  unsigned(9 downto 0) := (others => '0');     -- 9 downto 0?TODO
 	 -- enable for the digit clock 
     signal  DigitClkEn  :  std_logic;
 	 -- current mux digit 
      --signal  CurDigit    :  std_logic_vector(NUM_DIGITS - 1 downto 0); --(3 downto 0) := "0011";
-    signal CurDigit    : unsigned(4 downto 0); --too  much TODO
+    signal CurDigit    : unsigned(4 downto 0) := (others => '0'); --too  much TODO
      
     --  adder/subtracter signals
     signal  CalcResultBit  :  std_logic;        -- sum/difference output
@@ -102,7 +104,7 @@ architecture  Behavioral  of  SerialDivider  is
 	 signal CalculateQ     :   std_logic; 
 	 signal nCalculateQ    :   std_logic;
 	 -- flag for when division is in progress/has been completed
-	 signal DivideDone     :   std_logic; 
+	 signal DivideDone     :   std_logic := '0'; 
 
 begin
 
@@ -187,14 +189,14 @@ begin
 				Subtract <= '1';
                 NextRemainder <= (others => '0'); -- reset remainder signals
 				--Remainder <= "0000000000000000" & Dividend(NUM_BITS - 1); -- shift in highest dividend bit 
-				Remainder <= (0     => Dividend(NUM_BITS - 1), 
+				Remainder <= (0     => Dividend(NUM_SIZE), 
 				            others  => '0');  
 				
 			elsif  (MuxCntr < NUM_BITS * (NUM_BITS + 2) and MuxCntr mod (NUM_BITS + 2) = 0
 			     and CalculateQ = '1'and CurDigit = NUM_DIGITS) then  --std_match(MuxCntr, "0----00000")
 				-- have finished with current dividend bit, shift in next bit 
 				-- count 18 = 0 
-				Remainder <= Remainder(NUM_SIZE downto 0) & Dividend(NUM_SIZE - 1);
+				Remainder <= Remainder(NUM_SIZE downto 0) & Dividend(NUM_SIZE);
 				
 			elsif (CalculateQ = '1' and CurDigit = NUM_DIGITS and MuxCntr < NUM_BITS * (NUM_BITS + 2) and 
 			         MuxCntr mod (NUM_BITS + 2) > 0 and MuxCntr mod (NUM_BITS + 2) < NUM_BITS + 1) then 
@@ -210,7 +212,7 @@ begin
 				-- save the sum or difference for the next remainder to use 
 				NextRemainder <= CalcResultBit & NextRemainder(NUM_SIZE downto 1); 
 				
-			elsif (CalculateQ = '1' and CurDigit = NUM_DIGITS and  MuxCntr < NUM_BITS * (NUM_BITS + 1) and 
+			elsif (CalculateQ = '1' and CurDigit = NUM_DIGITS and  MuxCntr < NUM_BITS * (NUM_BITS + 2) and 
 			         MuxCntr mod (NUM_BITS + 2) = NUM_BITS + 1) then 
 			--std_match(MuxCntr, "0----10001")) then 
 			    -- if counter % bits+1 = 0  
@@ -225,7 +227,7 @@ begin
 					(HaveKey = '1') and (((CurDigit = DIVIDEND_DIGIT) and (DivisorSel = '0')) or
                                        ((CurDigit = DIVISOR_DIGIT) and (DivisorSel = '1')))) then 
 			   -- shift in key input to dividend or divisor
-			   Dividend <= Dividend(11 downto 0) & Keypad; 
+			   Dividend <= Dividend(NUM_SIZE - 4 downto 0) & Keypad; 
 			end if;
 		end if; 	  
 	 end process; 
@@ -309,7 +311,8 @@ begin
     DecoderBit  <=  std_logic_vector(CurDigit);
 
     -- the hex digit to output is just the low nibble of the shift register
-    HexDigit  <=  Dividend(NUM_NIBBLES - 1 downto 0); --TODO
+    HexDigit  <=  Dividend(3 downto 0); --TODO
 
+	 Done <= DivideDone; 
 
 end Behavioral;

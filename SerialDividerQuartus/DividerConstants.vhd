@@ -27,7 +27,7 @@ use IEEE.NUMERIC_STD.ALL;
 package DividerConstants is
 
     -- the all important  
-    constant NUM_NIBBLES    : natural   := 4;  -- number of nibbles (digits) to divide  
+    constant NUM_NIBBLES    : natural   := 5;  -- number of nibbles (digits) to divide  
     constant NUM_BITS       : natural   := NUM_NIBBLES * 4;   
     constant NUM_SIZE       : natural   := NUM_BITS - 1; -- vector size 
     constant NUM_DIGITS     : natural   := NUM_NIBBLES * 3; -- number of digits to display 
