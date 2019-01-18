@@ -23,7 +23,7 @@ package DividerConstants is
 
     -- number of nibbles (digits) in divisor, dividend, and quotient  
 	 -- change only this value to change number of bits to divide
-    constant NUM_NIBBLES    : natural   := 4;  
+    constant NUM_NIBBLES    : natural   := 5;  
 	 
 	 -- number of bits in divisor, dividend, and quotient
     constant NUM_BITS       : natural   := NUM_NIBBLES * 4; 
@@ -32,11 +32,11 @@ package DividerConstants is
 	 -- total number of digits to display (total digits in divisor, dividend, quotient
     constant NUM_DIGITS     : natural   := NUM_NIBBLES * 3;  
     
-	 -- number digit the dividend begins on 
+	 -- digit the dividend begins on 
     constant DIVIDEND_DIGIT : integer   := 0;
-	 -- number digit the divisor begins on 
+	 -- digit the divisor begins on 
     constant DIVISOR_DIGIT  : integer   := NUM_NIBBLES;  
-	 -- number digit the quotient begins on 
+	 -- digit the quotient begins on 
 	 constant QUOTIENT_DIGIT : integer   := NUM_NIBBLES * 2; 
 
 	 -- timing constants for testing 

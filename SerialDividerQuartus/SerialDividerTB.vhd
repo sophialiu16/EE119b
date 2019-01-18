@@ -6,11 +6,16 @@
 --  thoroughly tests the entity by exercising it and checking the outputs
 --  through the use of an array of test values (TestVector). The test bench
 --  entity is called SerialDividerTB.
+--  
+--  Lines 106-120 contain specific cases, and the appropriate test case 
+--  should be uncommented for 16 or 20 bit testing.
 --
 --  Revision History:
 --      4/4/00   Automated/Active-VHDL    Initial revision.
 --      11/21/18 Sophia Liu 			      Updated for bit serial multiplier testing
 --      11/22/18 Sophia Liu 					Updated comments 
+--      01/16/18 Sophia Liu               Update for 20 bit division 
+--      01/17/18 Sophia Liu               Updated comments 
 --
 ----------------------------------------------------------------------------
 
@@ -101,19 +106,19 @@ begin
 		  
 		  -- comment out appropriate case -- 
 		  -------------------------------------------------------------------
---		  -- edge cases for 20 
---		  -- both 0, divisor 0, large dividend and small divisor, 
---		  -- largest dividend, divide by 1, small dividend, large divisor
---		  DivisorCases <= (X"00000", X"00000", X"00002", X"00001", X"FFFFF");
---		  DividendCases <= (X"00000", X"FFFFF", X"FFBCD", X"FFFFF", X"00001");
---		  QuotientCases <= (X"00000", X"00000", X"7FDE6", X"FFFFF", X"00000");
-		 
-		  -- edge cases for 16 
+		  -- edge cases for 20 
 		  -- both 0, divisor 0, large dividend and small divisor, 
 		  -- largest dividend, divide by 1, small dividend, large divisor
-		  DivisorCases <= (X"0000", X"0000", X"0002", X"0001", X"FFFF", X"A3C3");
-		  DividendCases <= (X"0000", X"FFFF", X"FFBC", X"FFFF", X"0001", X"78C3");
-		  QuotientCases <= (X"0000", X"0000", X"7FDE", X"FFFF", X"0000", X"0000");  
+		  DivisorCases <= (X"00000", X"00000", X"00002", X"00001", X"FFFFF", x"A3C34");
+		  DividendCases <= (X"00000", X"FFFFF", X"FFBCD", X"FFFFF", X"00001", X"78C34");
+		  QuotientCases <= (X"00000", X"00000", X"7FDE6", X"FFFFF", X"00000", X"00000");
+		 
+--		  -- edge cases for 16 
+--		  -- both 0, divisor 0, large dividend and small divisor, 
+--		  -- largest dividend, divide by 1, small dividend, large divisor
+--		  DivisorCases <= (X"0000", X"0000", X"0002", X"0001", X"FFFF", X"A3C3");
+--		  DividendCases <= (X"0000", X"FFFF", X"FFBC", X"FFFF", X"0001", X"78C3");
+--		  QuotientCases <= (X"0000", X"0000", X"7FDE", X"FFFF", X"0000", X"0000");  
 		  
 		  
 		  -- initially everything is X, have not started
@@ -123,8 +128,8 @@ begin
 			Calculate  	<= 'X';
 			wait for 100 ns; 
 			
-			-- test edge cases
-			----------------------------------------------- 
+			-- test edge cases --
+			----------------------------------------------------------------------
 			for j in 0 to 5 loop 
 				-- input divisor 
 				DivisorSel <= '1'; 	-- set DivisorSel high for divisor
@@ -186,8 +191,8 @@ begin
 		  
 		   wait for DIGIT_COUNT; -- place for breakpoint, if desired
 			
-		   -- test random signals--
-			----------------------------------------------- 
+		   -- test random signals --
+			----------------------------------------------------------------------
 			for j in 0 to RAND_COUNT loop 
 				-- input divisor 
 				DivisorSel <= '1'; 	-- set DivisorSel high for divisor
@@ -257,8 +262,8 @@ begin
 					severity  ERROR;
 				
 				wait for DIGIT_COUNT; -- let divider cycle through digits 
-				TestQuotient <= (Others => 'X'); -- reset for simulation 
-				Quotient <= (Others => 'X'); -- reset for simulation 
+				--TestQuotient <= (Others => 'X'); -- reset for simulation 
+				--Quotient <= (Others => 'X'); -- reset for simulation 
 			end loop; 
 			----------------------------------------------------------------------
 		  
