@@ -51,10 +51,10 @@ entity  SerialDivider  is
 		  -- enable for the 4:12 digit decoder
         DecoderEn   :  out  std_logic;
 		  -- digit to display (to 4:12 decoder)
-        DecoderBit  :  out  std_logic_vector(3 downto 0);
+        DecoderBit  :  out  std_logic_vector(3 downto 0); --std_logic_vector
 		  -- clock input signal
         CLK         :  in   std_logic;
-		  
+		  -- division done, high when finished with division 
 		  Done        :  out  std_logic
     );
 
@@ -72,8 +72,8 @@ architecture  Behavioral  of  SerialDivider  is
 	 signal Quotient       :   std_logic_vector(NUM_BITS - 1 downto 0);
 	 
 	 -- signals for divisor and dividend input
-	 signal Divisor        :   std_logic_vector(NUM_BITS - 1 downto 0) := "00000000000000000101";--"00000000000000001011";
-	 signal Dividend       :   std_logic_vector(NUM_BITS - 1 downto 0) := "11000000000011100101";--"00000000000010001001";
+	 signal Divisor        :   std_logic_vector(NUM_BITS - 1 downto 0);
+	 signal Dividend       :   std_logic_vector(NUM_BITS - 1 downto 0);
 
     -- keypad signals
 	 -- have a key from the keypad
@@ -83,11 +83,10 @@ architecture  Behavioral  of  SerialDivider  is
 
     -- LED multiplexing signals
 	 -- multiplex counter to divide down to 1 Khz
-    signal  MuxCntr     :  unsigned(9 downto 0) := (others => '0');     -- 9 downto 0?TODO
+    signal  MuxCntr     :  unsigned(9 downto 0) := (others => '0');     
 	 -- enable for the digit clock 
     signal  DigitClkEn  :  std_logic;
 	 -- current mux digit 
-     --signal  CurDigit    :  std_logic_vector(NUM_DIGITS - 1 downto 0); --(3 downto 0) := "0011";
     signal CurDigit    : unsigned(3 downto 0) := (others => '0'); --too  much TODO
      
     --  adder/subtracter signals
@@ -281,9 +280,8 @@ begin
                 if CurDigit = NUM_DIGITS then  
                     CurDigit <= (others => '0');  
                 end if; 
-                --CurDigit <= CurDigit(NUM_DIGITS - 1 downto 0) & CurDigit(NUM_DIGITS);
             else 
-                CurDigit <= CurDigit; --?
+                CurDigit <= CurDigit; 
             end if; 
         end if;  
      end process;
@@ -292,10 +290,10 @@ begin
     DecoderEn  <=  '1';
 
     -- output the current digit to the digit decoder
-    DecoderBit  <=  std_logic_vector(CurDigit);
+    DecoderBit <= std_logic_vector(CurDigit);
 
     -- the hex digit to output is just the low nibble of the shift register
-    HexDigit  <=  Dividend(3 downto 0); --TODO
+    HexDigit  <=  Dividend(3 downto 0); 
 
 	 Done <= DivideDone; 
 

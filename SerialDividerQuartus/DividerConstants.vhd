@@ -1,21 +1,16 @@
 ----------------------------------------------------------------------------------
--- constants for Serial Divider 
--- Company: 
--- Engineer: 
+--
+-- Constants for Serial Divider 
 -- 
--- Create Date: 01/16/2019 08:05:34 PM
--- Design Name: 
--- Module Name: DividerConstants - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
+-- DividerConstants.vhd
 -- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
+-- This file contains constants for the SerialDivider entity and testbench. 
+-- Only NUM_NIBBLES, the number of nibbles (or digits) in the divisor, dividend,
+-- and quotient, should be changed to perform 16 or 20 bit division.
+--
+--  Revision History:
+--     01/16/19	Sophia Liu	initial revision
+--     01/17/19   Sophia Liu  added testbench constants, updated comments
 -- 
 ----------------------------------------------------------------------------------
 
@@ -28,7 +23,7 @@ package DividerConstants is
 
     -- number of nibbles (digits) in divisor, dividend, and quotient  
 	 -- change only this value to change number of bits to divide
-    constant NUM_NIBBLES    : natural   := 5;  
+    constant NUM_NIBBLES    : natural   := 4;  
 	 
 	 -- number of bits in divisor, dividend, and quotient
     constant NUM_BITS       : natural   := NUM_NIBBLES * 4; 
@@ -41,5 +36,15 @@ package DividerConstants is
     constant DIVIDEND_DIGIT : integer   := 0;
 	 -- number digit the divisor begins on 
     constant DIVISOR_DIGIT  : integer   := NUM_NIBBLES;  
+	 -- number digit the quotient begins on 
+	 constant QUOTIENT_DIGIT : integer   := NUM_NIBBLES * 2; 
+
+	 -- timing constants for testing 
+	 constant CLK_PERIOD : time := 20 ns;
+	 constant MUX_COUNT  : time := CLK_PERIOD * 2000; 
+	 constant DIGIT_COUNT: time := MUX_COUNT * NUM_DIGITS;
+	 
+	 -- number of times to perform random testing 
+	 constant RAND_COUNT : natural := 50; 
 
 end package DividerConstants;
