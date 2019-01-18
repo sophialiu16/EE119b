@@ -51,7 +51,7 @@ entity  SerialDivider  is
 		  -- enable for the 4:12 digit decoder
         DecoderEn   :  out  std_logic;
 		  -- digit to display (to 4:12 decoder)
-        DecoderBit  :  out  std_logic_vector(4 downto 0);
+        DecoderBit  :  out  std_logic_vector(3 downto 0);
 		  -- clock input signal
         CLK         :  in   std_logic;
 		  
@@ -73,7 +73,7 @@ architecture  Behavioral  of  SerialDivider  is
 	 
 	 -- signals for divisor and dividend input
 	 signal Divisor        :   std_logic_vector(NUM_BITS - 1 downto 0) := "00000000000000000101";--"00000000000000001011";
-	 signal Dividend       :   std_logic_vector(NUM_BITS - 1 downto 0) := "00000000000011100101";--"00000000000010001001";
+	 signal Dividend       :   std_logic_vector(NUM_BITS - 1 downto 0) := "11000000000011100101";--"00000000000010001001";
 
     -- keypad signals
 	 -- have a key from the keypad
@@ -88,7 +88,7 @@ architecture  Behavioral  of  SerialDivider  is
     signal  DigitClkEn  :  std_logic;
 	 -- current mux digit 
      --signal  CurDigit    :  std_logic_vector(NUM_DIGITS - 1 downto 0); --(3 downto 0) := "0011";
-    signal CurDigit    : unsigned(4 downto 0) := (others => '0'); --too  much TODO
+    signal CurDigit    : unsigned(3 downto 0) := (others => '0'); --too  much TODO
      
     --  adder/subtracter signals
     signal  CalcResultBit  :  std_logic;        -- sum/difference output
@@ -271,6 +271,7 @@ begin
     -- create the counter for output the current digit
     -- order is 0 to NUM_DIGITS, with calculations done on MSB
     -- only increment if DigitClkEn is active
+	 -- changed digit order: dividend LSB 0, MSB NUM_NIBBLES - 1; divisor -> dividend + NUM_NIBBLES
     process (CLK)
     begin
         if (rising_edge(CLK)) then
@@ -286,23 +287,6 @@ begin
             end if; 
         end if;  
      end process;
-            
---            if (DigitClkEn = '1') then
---                CurDigit(0) <= not CurDigit(0);
---                CurDigit(1) <= CurDigit(1) xor not CurDigit(0);
---            if (std_match(CurDigit, "--00")) then 
---                CurDigit(2) <= not CurDigit(2);
---            end if;
---            if (std_match(CurDigit, "-100")) then
---                CurDigit(3) <= not CurDigit(3);
---            end if;
---			if (std_match(CurDigit, "1000")) then 
---				CurDigit <= "1100";  
---			end if; 
---            else -- otherwise hold the current value
---                CurDigit <= CurDigit;
-
---            end if;
 
     -- always enable the digit decoder
     DecoderEn  <=  '1';

@@ -26,13 +26,20 @@ use IEEE.NUMERIC_STD.ALL;
 
 package DividerConstants is
 
-    -- the all important  
-    constant NUM_NIBBLES    : natural   := 5;  -- number of nibbles (digits) to divide  
-    constant NUM_BITS       : natural   := NUM_NIBBLES * 4;   
-    constant NUM_SIZE       : natural   := NUM_BITS - 1; -- vector size 
-    constant NUM_DIGITS     : natural   := NUM_NIBBLES * 3; -- number of digits to display 
+    -- number of nibbles (digits) in divisor, dividend, and quotient  
+	 -- change only this value to change number of bits to divide
+    constant NUM_NIBBLES    : natural   := 5;  
+	 
+	 -- number of bits in divisor, dividend, and quotient
+    constant NUM_BITS       : natural   := NUM_NIBBLES * 4; 
+	 -- vector size for divisor, dividend, and quotient
+    constant NUM_SIZE       : natural   := NUM_BITS - 1;
+	 -- total number of digits to display (total digits in divisor, dividend, quotient
+    constant NUM_DIGITS     : natural   := NUM_NIBBLES * 3;  
     
-    constant DIVIDEND_DIGIT : integer   := NUM_NIBBLES - 1; -- digit dividend begins on  
-    constant DIVISOR_DIGIT  : integer   := NUM_NIBBLES * 2 - 1; 
+	 -- number digit the dividend begins on 
+    constant DIVIDEND_DIGIT : integer   := 0;
+	 -- number digit the divisor begins on 
+    constant DIVISOR_DIGIT  : integer   := NUM_NIBBLES;  
 
 end package DividerConstants;

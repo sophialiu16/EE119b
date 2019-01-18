@@ -18,6 +18,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.DividerConstants.all; 
 
 
 entity SerialDividerTB is
@@ -34,7 +35,7 @@ architecture TB_ARCHITECTURE of SerialDividerTB is
         Keypad      :  in   std_logic_vector(3 downto 0);
         HexDigit    :  out  std_logic_vector(3 downto 0);
         DecoderEn   :  out  std_logic;
-        DecoderBit  :  out  std_logic_vector(4 downto 0);
+        DecoderBit  :  out  std_logic_vector(3 downto 0);
         CLK         :  in   std_logic; 
 		  Done        :  out  std_logic
 		 );
@@ -47,7 +48,7 @@ architecture TB_ARCHITECTURE of SerialDividerTB is
 	 signal Keypad       : std_logic_vector(3 downto 0); 
     signal  Calculate  	:  std_logic;
 	 signal  DecoderEn   :  std_logic; 
-	 signal  DecoderBit  :  std_logic_vector(4 downto 0); 
+	 signal  DecoderBit  :  std_logic_vector(3 downto 0); 
     signal  CLK   :  std_logic;
 	 signal Done : std_logic; 
 	 
@@ -59,9 +60,8 @@ architecture TB_ARCHITECTURE of SerialDividerTB is
     signal  END_SIM  :  BOOLEAN := FALSE;
 
     -- Test Input Vector, largely randomly generated 
-    signal  TestVector  :  std_logic_vector(824 downto 0)
-                        := "111111111111111000000000011010010100000000010010111010100100100100000110001101111100111000001100111000100001111000110010010100111111101010010110010100000100100101000101010111000011111100101101000101001000111110001011010010100011111010010001010111100110000000111111100111100011100100000010011110101011011011100110110001110101111110001101000101100011100101110001010100111111011111000100100001011000011110001110000110101010011001100011101101000101011010011000011010110001110010101111101110000001010101111100011111001001100101000110101000011100011111110001011011010010100101011000101001010010111000100110001110111011010101100101101111111000011010100001110001010111000000100111000100000110010100100101111011011010111111110011010111101111010000101011000000001000101011110110001000111001011111110010100000011101101000111011101101010";
-
+    --signal  TestVector  : std_lo
+	 signal Divisor : std_logic_vector(
 	
 begin
 
@@ -95,11 +95,13 @@ begin
 			Keypad      <= "XXXX";
 			Calculate  	<= 'X';
 			DecoderEn   <= 'X'; 
-		   DecoderBit  <= "XXXXX"; 
+		   DecoderBit  <= "XXXX"; 
 			wait for 100 ns; 
 			
+			-- test edge cases 
 			
-		   Calculate <= '1'; 
+			
+		  Calculate <= '1'; 
         wait for 100 ns;	
 		  
 		  --Reset <= '1'; 
@@ -111,6 +113,9 @@ begin
 		  if Done /= '1' then 
 			wait until Done = '1'; 
 		  end if; 
+		  
+		  
+		  -- test random signals
 		  
 		  -- shift through test vector to test random cases 
 --        for i in 0 to TestVector'high loop
