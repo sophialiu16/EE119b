@@ -2,5 +2,6 @@
 
 !.gitignore
 !*.vhd
+!*.asm
 
 !*/
