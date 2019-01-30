@@ -45,6 +45,10 @@ entity ALU is
         Clk     : in std_logic; -- system clock
         -- from CU
         ALUOp   : in std_logic_vector(3 downto 0); -- operation control signals 
+        
+        -- adder/subtractor: 
+        -- ALUOp(0) = Subtract/nAdd
+        -- ALUOp(1) = Carry 
         ALUSel  : in std_logic_vector(1 downto 0); -- operation select 
         FlagMask: in std_logic_vector(7 downto 0); -- mask for writing to status flags
         
@@ -59,10 +63,12 @@ end ALU;
 
 architecture behavioral of ALU is 
 
-signal AdderOut : std_logic_vector(7 downto 0); 
+signal AdderOut : std_logic_vector(7 downto 0); -- adder/subtracter output
 signal CarryOut: std_logic_vector(7 downto 0); 
 
 signal Fout : std_logic_vector(7 downto 0); -- f block output 
+
+signal SRout : std_logic_vector(7 downto 0); -- shifter/rotator block output 
 
 component fullAdder is
 	port(
@@ -77,13 +83,24 @@ end component;
 
 component Mux is
 	port(
-		A   		:  in      std_logic;  -- mux sel (0) 
-		B 	 		:  in      std_logic;  -- mux sel(1) 
-		Op          :  in      std_logic_vector(3 downto 0);  -- mux inputs
-		FOut  		:  out     std_logic   -- mux output
+		S0   		:  in      std_logic;  -- mux sel (0) 
+		S1 	 		:  in      std_logic;  -- mux sel(1) 
+		SIn0         :  in      std_logic;  -- mux inputs
+		SIn1         :  in      std_logic;  -- mux inputs
+		SIn2         :  in      std_logic;  -- mux inputs
+		SIn3         :  in      std_logic;  -- mux inputs
+		SOut  		:  out     std_logic   -- mux output
 	  );
 end component;  
 
+component Mux2 is
+	port(
+		Sel   		:  in      std_logic;  -- mux sel  
+		SIn0        :  in     std_logic;  -- mux input 0
+		SIn1        :  in     std_logic;  -- mux input 1
+		SOut  		:  out     std_logic   -- mux output
+	  );
+end component;  
 begin
 
 -- parallel adder/subtracter 
@@ -113,15 +130,36 @@ begin
     GenFBlock:  for i in REGSIZE-1 downto 0 generate
 	  FBlocki: Mux
     	port map(
-            A   		=> RegA(i),
-            B 	 		=> RegB(i),
-            Op          => ALUOp,
-            FOut    	=> FOut(i)
+            S0   		=> RegA(i),
+            S1 	 		=> RegB(i),
+            SIn0        => ALUOp(0),
+            SIn1        => ALUOp(1),
+            SIn2        => ALUOp(2),
+            SIn3        => ALUOp(3),
+            SOut    	=> FOut(i)
 	  );
 	  end generate GenFBlock;
 -- shifter/rotator
-
--- end mux 
+	port(
+		Sel   		:  in      std_logic;  -- mux sel  
+		SIn0        :  in     std_logic;  -- mux input 0
+		SIn1        :  in     std_logic;  -- mux input 1
+		SOut  		:  out     std_logic   -- mux output
+	  );
+	  
+-- end mux     
+    GenALUSel:  for i in REGSIZE-1 downto 0 generate
+    ALUSelMux: Mux
+    	port map(
+            S0   		=> ALUSel(0),
+            S1 	 		=> ALUSel(1),
+            SIn0        => AdderOut(i),
+            SIn1        => FOut(i), 
+            SIn2        => SROut(i),
+            SIn3        => 'X',
+            SOut    	=> RegOut(i)
+	  );
+	  end generate GenALUSel;
 
 end behavioral;  
 
@@ -181,27 +219,30 @@ use ieee.numeric_std.all;
 
 entity Mux is
 	port(
-		A   		:  in      std_logic;  -- mux sel (0) 
-		B 	 		:  in      std_logic;  -- mux sel(1) 
-		Op          :  in      std_logic_vector(3 downto 0);  -- mux inputs
-		FOut  		:  out     std_logic   -- mux output
+		S0   		:  in      std_logic;  -- mux sel (0) 
+		S1 	 		:  in      std_logic;  -- mux sel(1) 
+		SIn0         :  in      std_logic;  -- mux inputs
+		SIn1         :  in      std_logic;  -- mux inputs
+		SIn2         :  in      std_logic;  -- mux inputs
+		SIn3         :  in      std_logic;  -- mux inputs
+		SOut  		:  out     std_logic   -- mux output
 	  );
 end Mux;
 
 architecture Mux of Mux is
 	begin
-    process(Op, A, B)
+    process(SIn0, SIn1, SIn2, SIn3, S0, S1)
     begin  
-        if A = '0' and B = '0' then 
-            Fout <= Op(0); 
-        elsif A = '0' and B = '1' then 
-            Fout <= Op(1); 
-        elsif A = '1' and B = '0' then 
-            Fout <= Op(2); 
-        elsif A = '1' and B = '1' then 
-            Fout <= Op(3); 
+        if S0 = '0' and S1 = '0' then 
+            SOut <= SIn0; 
+        elsif S0 = '0' and S1 = '1' then 
+            SOut <= SIn1; 
+        elsif S0 = '1' and S1 = '0' then 
+            SOut <= SIn2; 
+        elsif S0 = '1' and S1 = '1' then 
+            SOut <= SIn3; 
         else 
-            Fout <= 'X'; -- for sim  
+            SOut <= 'X'; -- for sim  
         end if;   
     end process;
 end Mux;
@@ -215,20 +256,20 @@ use ieee.numeric_std.all;
 entity Mux2 is
 	port(
 		Sel   		:  in      std_logic;  -- mux sel  
-		S0          :  in      std_logic;  -- mux input 0
-		S1          :  in      std_logic;  -- mux input 1
+		SIn0        :  in      std_logic;  -- mux input 0
+		SIn1        :  in      std_logic;  -- mux input 1
 		SOut  		:  out     std_logic   -- mux output
 	  );
 end Mux2;
 
 architecture Mux2 of Mux2 is
 	begin
-    process(Sel, S0, S1)
+    process(Sel, SIn0, SIn1)
     begin  
         if Sel = '0' then
-            Sout <= S0; 
+            Sout <= SIn0; 
         elsif Sel = '1' then 
-            Sout <= S1; 
+            Sout <= SIn1; 
         else 
             Sout <= 'X'; -- for sim  
         end if;   
