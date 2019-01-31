@@ -54,11 +54,10 @@ package ALUConstants is
     constant HALFCARRYBIT : natural := 3; -- half carry is carry out of bit 3
     
     -- TODO merge
-    subtype ALU_selects is std_logic_vector(2 downto 0);
+    subtype ALU_selects is std_logic_vector(1 downto 0);
     
     constant AddSubEn       : ALU_selects := "00";
     constant FBlockEn       : ALU_selects := "01";
     constant ShiftEn        : ALU_selects := "10";
-    constant SRegSet        : ALU_selects := "11";
 
 end package ALUConstants;

@@ -25,6 +25,7 @@ use work.ALUconstants.all;
 entity ALUTB is
     -- timing constants for testing  
     constant CLK_PERIOD : time := 20 ns;
+    constant EDGE_TEST_SIZE: natural := 5; 
 end ALUTB;
 
 architecture TB_ARCHITECTURE of ALUTB is
@@ -32,7 +33,7 @@ architecture TB_ARCHITECTURE of ALUTB is
     -- test component declaration 
     component ALU is
         port(
-            Clk     : in std_logic; -- system clock
+            --Clk     : in std_logic; -- system clock
             ALUOp   : in std_logic_vector(3 downto 0); -- operation control signals 
             ALUSel  : in std_logic_vector(1 downto 0); -- operation select 
     
@@ -57,11 +58,18 @@ architecture TB_ARCHITECTURE of ALUTB is
     signal StatusOut    : std_logic_vector(REGSIZE-1 downto 0); -- status register output
     
     type VectorCases is array (integer range <>) of std_logic_vector(REGSIZE-1 downto 0);
-	signal EdgeCases : VectorCases(5 downto 0);
+	signal EdgeCasesA : VectorCases(EDGE_TEST_SIZE downto 0);
+	signal EdgeCasesB : VectorCases(EDGE_TEST_SIZE downto 0);
+	signal AddResult : VectorCases(EDGE_TEST_SIZE downto 0);
+	signal AddFlags : VectorCases(EDGE_TEST_SIZE downto 0);
+	signal SubResult : VectorCases(EDGE_TEST_SIZE downto 0);
+	signal SubFlags : VectorCases(EDGE_TEST_SIZE downto 0);
+	
+	signal TestResult : std_logic_vector(REGSIZE-1 downto 0); 
     begin
         UUT: ALU 
         port map(
-            Clk     => Clk,
+            --Clk     => Clk,
             ALUOp   => ALUOp,
             ALUSel  => ALUSel,
             RegA    => RegA,
@@ -74,7 +82,11 @@ architecture TB_ARCHITECTURE of ALUTB is
         TB: process
         variable  i  :  integer; 
         begin 
-        	EdgeCases <= (X"00", X"FF", X"EE", X"8C", X"01", X"34");
+        	EdgeCasesA <= (X"00", X"FF", X"EE", X"80", X"01", X"34");
+        	EdgeCasesB <= (X"00", X"FF", X"11", X"80", X"05", X"F0");
+        	AddResult <= (X"00", X"FE", X"FF", X"00", X"06", X"24");
+        	AddFlags <= (X"00", "00", X"11", X"36", X"05", X"F0");
+        	SubResult <= (X"00", X"00", X"11", X"36", X"05", X"F0");
         	
         	-- initially everything is X, have not started
             ALUOp   <= "XXXX";
@@ -84,10 +96,21 @@ architecture TB_ARCHITECTURE of ALUTB is
         	wait for 100 ns; 
         	
         	-- test add/subtract
-        	for i in 0 to EdgeCases'LENGTH-1 loop 
-        	
-        	-- check result 
-        	-- check pre-masked sreg
+        	for i in 0 to EdgeCasesA'LENGTH-1 loop 
+        	   ALUOp <= OP_ADD and OP_NOCARRY; 
+        	   ALUSel <= ADDSUBEN; 
+        	   RegA <= EdgeCasesA(i);
+        	   RegB <= EdgeCasesB(i); 
+        	   
+        	   wait for CLK_PERIOD; 
+        	   -- check result
+        	   assert (std_match(AddResult(i), RegOut))
+					report  "Add result failure"
+					severity  ERROR;
+        	   -- check pre-masked sreg
+        	   assert (std_match(AddFlags(i), StatusOut))
+					report  "Add  sreg failure"
+					severity  ERROR;
         	end loop; 
 
             -- add no carry 

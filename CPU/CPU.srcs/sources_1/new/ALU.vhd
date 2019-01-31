@@ -41,7 +41,7 @@ use work.ALUconstants.all;
 
 entity ALU is
     port(
-        Clk     : in std_logic; -- system clock
+        --Clk     : in std_logic; -- system clock
         -- from CU
         ALUOp   : in std_logic_vector(3 downto 0); -- operation control signals 
         ALUSel  : in std_logic_vector(1 downto 0); -- operation select 
@@ -69,6 +69,11 @@ signal SRout : std_logic_vector(REGSIZE-1 downto 0); -- shifter/rotator block ou
 --signal SRegBuff : std_logic_vector(REGSIZE-1 downto 0); -- sreg before flag mask
 
 signal RegBuff  : std_logic_vector(REGSIZE-1 downto 0); -- buffer for output result ?
+
+-- internal status signals 
+signal NFlag : std_logic; -- negative status flag
+signal CFlag : std_logic; -- carry status flag
+signal VFlag : std_logic; -- signed overflow status flag 
 
 -- component declarations 
 component fullAdder is
@@ -185,18 +190,22 @@ begin
     StatusOut(4) <= 'X'; -- N xor V
     
     -- signed overflow 
-    StatusOut(3) <= '0' when ALUSEL = FBLOCKEN else 
-                    'X' when ALUSEL = SHIFTEN; --TODO
+    VFlag <= '1' when (ALUSEL = ADDSUBEN and CarryOut(REGSIZE-1)= CarryOut(REGSIZE-2)) else 
+                    '0' when (ALUSEL = ADDSUBEN or  ALUSEL = FBLOCKEN) else 
+                    (NFlag xor CFlag) when ALUSEL = SHIFTEN; --N xor C for shift operations 
+    StatusOut(3) <= VFlag; 
     
-    -- negative 
-    StatusOut(2) <= RegBuff(REGSIZE-1);
+    -- negative
+    NFlag <= RegBuff(REGSIZE-1); 
+    StatusOut(2) <= NFlag; 
     
     -- zero flag 
     StatusOut(1) <= '1' when RegBuff = ZERO8 else 
                     '0';
     -- carry
-    StatusOut(0) <= CarryOut(REGSIZE-1) when ALUSel = ADDSUBEN else 
+    CFlag <= CarryOut(REGSIZE-1) when ALUSel = ADDSUBEN else 
                    RegA(0) when ALUSel = SHIFTEN; -- don't care value?
+    StatusOut(0) <= CFlag; 
 
 end behavioral;  
 
