@@ -45,30 +45,30 @@ entity ALU is
         Clk     : in std_logic; -- system clock
         -- from CU
         ALUOp   : in std_logic_vector(3 downto 0); -- operation control signals 
-        
-        -- adder/subtractor: 
-        -- ALUOp(0) = Subtract/nAdd
-        -- ALUOp(1) = Carry 
         ALUSel  : in std_logic_vector(1 downto 0); -- operation select 
-        FlagMask: in std_logic_vector(7 downto 0); -- mask for writing to status flags
+        FlagMask: in std_logic_vector(REGSIZE - 1 downto 0); -- mask for writing to status flags
         
         -- from Regs 
-        RegA    : in std_logic_vector(7 downto 0); -- operand A 
-        RegB    : in std_logic_vector(7 downto 0); -- operand B 
+        RegA    : in std_logic_vector(REGSIZE-1 downto 0); -- operand A
+        RegB    : in std_logic_vector(REGSIZE-1 downto 0); -- operand B, or immediate 
         
-        RegOut  : out std_logic_vector(7 downto 0); -- output result
-        StatusOut    : out std_logic_vector(7 downto 0) -- status flags to status register
+        RegOut  : out std_logic_vector(REGSIZE-1 downto 0); -- output result
+        StatusOut    : out std_logic_vector(REGSIZE-1 downto 0) -- status register output
     );
 end ALU;
 
 architecture behavioral of ALU is 
 
-signal AdderOut : std_logic_vector(7 downto 0); -- adder/subtracter output
-signal CarryOut: std_logic_vector(7 downto 0); 
+signal AdderOut : std_logic_vector(REGSIZE-1 downto 0); -- adder/subtracter output
+signal CarryOut: std_logic_vector(REGSIZE-1 downto 0); -- carry for adder/subtracter
 
-signal Fout : std_logic_vector(7 downto 0); -- f block output 
+signal Fout : std_logic_vector(REGSIZE-1 downto 0); -- f block output 
 
-signal SRout : std_logic_vector(7 downto 0); -- shifter/rotator block output 
+signal SRout : std_logic_vector(REGSIZE-1 downto 0); -- shifter/rotator block output 
+
+--signal SRegBuff : std_logic_vector(REGSIZE-1 downto 0); -- sreg before flag mask
+
+signal RegBuff  : std_logic_vector(REGSIZE-1 downto 0); -- buffer for output result ?
 
 component fullAdder is
 	port(
@@ -93,17 +93,19 @@ component Mux is
 	  );
 end component;  
 
-component Mux2 is
+component DFF is
 	port(
-		Sel   		:  in      std_logic;  -- mux sel  
-		SIn0        :  in     std_logic;  -- mux input 0
-		SIn1        :  in     std_logic;  -- mux input 1
-		SOut  		:  out     std_logic   -- mux output
+		Clk   		:  in      std_logic;  -- clock  
+	    En          :  in      std_logic;  -- enable
+		D           :  in      std_logic;  -- D input 
+		Q   		:  out     std_logic   -- Q output
 	  );
-end component;  
+end component;
+
 begin
 
--- parallel adder/subtracter 
+    -- adder/subtracter 
+    -- low bit, with carry in
     adder0: fullAdder
     	port map(
             A   		=> RegA(0),
@@ -113,7 +115,7 @@ begin
             Cout    	=> Carryout(0), 
             Sum  		=> AdderOut(0)
 	  );
-	  
+	  -- other bits 
 	  GenAdder:  for i in 1 to REGSIZE - 1 generate
 	  adderi: fullAdder
     	port map(
@@ -126,7 +128,7 @@ begin
 	  );
 	  end generate GenAdder;
 	  
--- fblock 
+    -- fblocks 
     GenFBlock:  for i in REGSIZE-1 downto 0 generate
 	  FBlocki: Mux
     	port map(
@@ -139,15 +141,23 @@ begin
             SOut    	=> FOut(i)
 	  );
 	  end generate GenFBlock;
--- shifter/rotator
-	port(
-		Sel   		:  in      std_logic;  -- mux sel  
-		SIn0        :  in     std_logic;  -- mux input 0
-		SIn1        :  in     std_logic;  -- mux input 1
-		SOut  		:  out     std_logic   -- mux output
+	  
+    -- shifter/rotator
+    -- assign middle and low bits 
+    SROut(REGSIZE - 2 downto 0) <= RegA(REGSIZE - 1 downto 1); 
+    -- assign high bit 
+	SRMux: Mux
+    	port map(
+            S0   		=> ALUOp(0),
+            S1 	 		=> ALUOp(1),
+            SIn0        => '0',             -- LSR high bit = 0
+            SIn1        => RegA(REGSIZE-1), -- ASR high bit constant
+            SIn2        => ALUOp(2),        -- ROR high bit = carry in 
+            SIn3        => 'X',
+            SOut    	=> SROut(REGSIZE-1)
 	  );
 	  
--- end mux     
+    -- end mux     
     GenALUSel:  for i in REGSIZE-1 downto 0 generate
     ALUSelMux: Mux
     	port map(
@@ -157,9 +167,36 @@ begin
             SIn1        => FOut(i), 
             SIn2        => SROut(i),
             SIn3        => 'X',
-            SOut    	=> RegOut(i)
+            SOut    	=> RegBuff(i)
 	  );
 	  end generate GenALUSel;
+    
+    -- Status Register logic
+    
+    
+    -- signed overflow 
+    StatusOut(3) <= '0' when ALUSEL = FBLOCKEN else 
+                    'X' when ALUSEL = SHIFTEN; --TODO
+    
+    -- negative 
+    StatusOut(2) <= RegBuff(REGSIZE-1);
+    
+    -- zero flag 
+    StatusOut(1) <= '1' when RegBuff = ZERO8 else 
+                   '0';
+    -- carry
+    StatusOut(0) <= CarryOut(REGSIZE-1) when ALUSel = ADDSUBEN else 
+                   RegA(0) when ALUSel = SHIFTEN; 
+    
+--    GENSRegSel: for i in REGSIZE-1 downto 0 generate
+--    SRegDFF: DFF
+--        port map(
+--            Clk   		=> Clk, 
+--            En          => FlagMask(i),
+--            D           => SRegBuff(i),
+--            Q   		=> StatusOut(i)
+--          );
+--     end generate GENSRegSel; 
 
 end behavioral;  
 
@@ -247,31 +284,56 @@ architecture Mux of Mux is
     end process;
 end Mux;
 
---------------------------- 2:1 mux
+--------------------------- DFF
 
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity Mux2 is
+entity DFF is
 	port(
-		Sel   		:  in      std_logic;  -- mux sel  
-		SIn0        :  in      std_logic;  -- mux input 0
-		SIn1        :  in      std_logic;  -- mux input 1
-		SOut  		:  out     std_logic   -- mux output
+		Clk   		:  in      std_logic;  -- clock  
+	    En          :  in      std_logic;  -- enable
+		D           :  in      std_logic;  -- D input 
+		Q   		:  out     std_logic   -- Q output
 	  );
-end Mux2;
+end DFF;
 
-architecture Mux2 of Mux2 is
+architecture DFF of DFF is
 	begin
-    process(Sel, SIn0, SIn1)
-    begin  
-        if Sel = '0' then
-            Sout <= SIn0; 
-        elsif Sel = '1' then 
-            Sout <= SIn1; 
-        else 
-            Sout <= 'X'; -- for sim  
-        end if;   
-    end process;
-end Mux2;
+    process(clk)
+    begin 
+        if rising_edge(clk) and En = '1' then 
+            Q <= D;
+        end if; 
+    end process; 
+end DFF;
+
+----------------------------- 2:1 mux
+
+--library ieee;
+--use ieee.std_logic_1164.all;
+--use ieee.numeric_std.all;
+
+--entity Mux2 is
+--	port(
+--		Sel   		:  in      std_logic;  -- mux sel  
+--		SIn0        :  in      std_logic;  -- mux input 0
+--		SIn1        :  in      std_logic;  -- mux input 1
+--		SOut  		:  out     std_logic   -- mux output
+--	  );
+--end Mux2;
+
+--architecture Mux2 of Mux2 is
+--	begin
+--    process(Sel, SIn0, SIn1)
+--    begin  
+--        if Sel = '0' then
+--            Sout <= SIn0; 
+--        elsif Sel = '1' then 
+--            Sout <= SIn1; 
+--        else 
+--            Sout <= 'X'; -- for sim  
+--        end if;   
+--    end process;
+--end Mux2;

@@ -22,33 +22,43 @@ use opcodes.opcodes.all;
 
 package ALUConstants is
     constant REGSIZE    : natural := 8; 
+    
+    constant ZERO8     : std_logic_vector(7 downto 0) := "00000000"; 
 
+    subtype ALU_OPS is std_logic_vector(3 downto 0);
     -- F-block operands 
-    constant OP_ZERO    : std_logic_vector(5 downto 0) := "0000--"; -- zeros
-    constant OP_NOR     : std_logic_vector(5 downto 0) := "0001--"; -- A nor B
-    constant OP_NOTA    : std_logic_vector(5 downto 0) := "0011--"; -- not A
-    constant OP_NOTB    : std_logic_vector(5 downto 0) := "0101--"; -- not B
-    constant OP_XOR     : std_logic_vector(5 downto 0) := "0110--"; -- A xor B
-    constant OP_NAND    : std_logic_vector(5 downto 0) := "0111--"; -- A nand B
-    constant OP_AND     : std_logic_vector(5 downto 0) := "1000--"; -- A and B
-    constant OP_XNOR    : std_logic_vector(5 downto 0) := "1001--"; -- A xnor B 
-    constant OP_OR      : std_logic_vector(5 downto 0) := "1110--"; -- A or B
-    constant OP_ONE     : std_logic_vector(5 downto 0) := "1111--"; -- true     
+    constant OP_ZERO    : ALU_OPS := "0000"; -- zeros
+    constant OP_NOR     : ALU_OPS := "0001"; -- A nor B
+    constant OP_NOTA    : ALU_OPS := "0011"; -- not A
+    constant OP_NOTB    : ALU_OPS := "0101"; -- not B
+    constant OP_XOR     : ALU_OPS := "0110"; -- A xor B
+    constant OP_NAND    : ALU_OPS := "0111"; -- A nand B
+    constant OP_AND     : ALU_OPS := "1000"; -- A and B
+    constant OP_XNOR    : ALU_OPS := "1001"; -- A xnor B 
+    constant OP_OR      : ALU_OPS := "1110"; -- A or B
+    constant OP_ONE     : ALU_OPS := "1111"; -- true     
     
     -- Shifter/Rotator operands 
-    -- abcde -> abc = high bit, d = middle bits, ef = low bit 
-    constant OP_LSR     : std_logic_vector(5 downto 0) := "011110"; -- Logical shift right 
-    constant OP_ASR     : std_logic_vector(5 downto 0) := "001110"; -- Arithmetic shift right
-    --constant OP_ASL     : std_logic_vector(5 downto 0) := "000001"; -- Arithmetic shift left -- left shift instructions??
-    constant OP_ROR     : std_logic_vector(5 downto 0) := "010110"; -- Rotate right
+    constant OP_LSR     : ALU_OPS := "00--"; -- Logical shift right 
+    constant OP_ASR     : ALU_OPS := "01--"; -- Arithmetic shift right
+    constant OP_ROR     : ALU_OPS := "100-"; -- Rotate right (no carry)
+    constant OP_RORC     : ALU_OPS := "101-"; -- Rotate right (with carry)
     
     -- Adder/Subtractor operands 
-    constant OP_ADD     : std_logic_vector(5 downto 0) := "0----";
-    constant OP_SUB     : std_logic_vector(5 downto 0) := "1----";
-    constant OP_CARRY   : std_logic_vector(5 downto 0) := "-1---"; 
-    constant OP_NOCARRY   : std_logic_vector(5 downto 0) := "-0---";
+    constant OP_ADD     : ALU_OPS := "0---";
+    constant OP_SUB     : ALU_OPS := "1---";
+    constant OP_CARRY   : ALU_OPS := "-1--"; 
+    constant OP_NOCARRY : ALU_OPS := "-0--";
     
     -- timing constants for testing  
     constant CLK_PERIOD : time := 20 ns;
+    
+    -- TODO merge
+    subtype ALU_selects is std_logic_vector(2 downto 0);
+    
+    constant AddSubEn       : ALU_selects := "00";
+    constant FBlockEn       : ALU_selects := "01";
+    constant ShiftEn        : ALU_selects := "10";
+    constant SRegSet        : ALU_selects := "11";
 
 end package ALUConstants;
