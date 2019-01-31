@@ -19,11 +19,10 @@
 --        ALUSel  - 2 bit control signal for the final operation select 
 --        RegA    - 8 bit operand A 
 --        RegB    - 8 bit operand B         
---        FlagMask- 8 bit mask for writing to status flags
 --
 --  Outputs:
 --        RegOut  - 8 bit output result        
---      StatusOut - 8 bit status flags to status register
+--        StatusOut - 8 bit status flags to status register
 --
 -- Revision History:
 -- 01/24/2019 Sophia Liu Initial revision
@@ -46,7 +45,7 @@ entity ALU is
         -- from CU
         ALUOp   : in std_logic_vector(3 downto 0); -- operation control signals 
         ALUSel  : in std_logic_vector(1 downto 0); -- operation select 
-        FlagMask: in std_logic_vector(REGSIZE - 1 downto 0); -- mask for writing to status flags
+        --FlagMask: in std_logic_vector(REGSIZE - 1 downto 0); -- mask for writing to status flags
         
         -- from Regs 
         RegA    : in std_logic_vector(REGSIZE-1 downto 0); -- operand A
@@ -59,6 +58,7 @@ end ALU;
 
 architecture behavioral of ALU is 
 
+-- internal signals
 signal AdderOut : std_logic_vector(REGSIZE-1 downto 0); -- adder/subtracter output
 signal CarryOut: std_logic_vector(REGSIZE-1 downto 0); -- carry for adder/subtracter
 
@@ -70,6 +70,7 @@ signal SRout : std_logic_vector(REGSIZE-1 downto 0); -- shifter/rotator block ou
 
 signal RegBuff  : std_logic_vector(REGSIZE-1 downto 0); -- buffer for output result ?
 
+-- component declarations 
 component fullAdder is
 	port(
 		A   		:  in      std_logic;  -- adder input 
@@ -173,6 +174,15 @@ begin
     
     -- Status Register logic
     
+    -- transfer, interrupt bits not set through ALU
+    StatusOut(7) <= 'X'; 
+    StatusOut(6) <= 'X'; --?
+    
+    -- half carry 
+    StatusOut(5) <= CarryOut(HALFCARRYBIT);
+    
+    -- corrected signed 
+    StatusOut(4) <= 'X'; -- N xor V
     
     -- signed overflow 
     StatusOut(3) <= '0' when ALUSEL = FBLOCKEN else 
@@ -183,20 +193,10 @@ begin
     
     -- zero flag 
     StatusOut(1) <= '1' when RegBuff = ZERO8 else 
-                   '0';
+                    '0';
     -- carry
     StatusOut(0) <= CarryOut(REGSIZE-1) when ALUSel = ADDSUBEN else 
-                   RegA(0) when ALUSel = SHIFTEN; 
-    
---    GENSRegSel: for i in REGSIZE-1 downto 0 generate
---    SRegDFF: DFF
---        port map(
---            Clk   		=> Clk, 
---            En          => FlagMask(i),
---            D           => SRegBuff(i),
---            Q   		=> StatusOut(i)
---          );
---     end generate GENSRegSel; 
+                   RegA(0) when ALUSel = SHIFTEN; -- don't care value?
 
 end behavioral;  
 
@@ -309,31 +309,3 @@ architecture DFF of DFF is
     end process; 
 end DFF;
 
------------------------------ 2:1 mux
-
---library ieee;
---use ieee.std_logic_1164.all;
---use ieee.numeric_std.all;
-
---entity Mux2 is
---	port(
---		Sel   		:  in      std_logic;  -- mux sel  
---		SIn0        :  in      std_logic;  -- mux input 0
---		SIn1        :  in      std_logic;  -- mux input 1
---		SOut  		:  out     std_logic   -- mux output
---	  );
---end Mux2;
-
---architecture Mux2 of Mux2 is
---	begin
---    process(Sel, SIn0, SIn1)
---    begin  
---        if Sel = '0' then
---            Sout <= SIn0; 
---        elsif Sel = '1' then 
---            Sout <= SIn1; 
---        else 
---            Sout <= 'X'; -- for sim  
---        end if;   
---    end process;
---end Mux2;

@@ -50,8 +50,8 @@ package ALUConstants is
     constant OP_CARRY   : ALU_OPS := "-1--"; 
     constant OP_NOCARRY : ALU_OPS := "-0--";
     
-    -- timing constants for testing  
-    constant CLK_PERIOD : time := 20 ns;
+    -- SReg
+    constant HALFCARRYBIT : natural := 3; -- half carry is carry out of bit 3
     
     -- TODO merge
     subtype ALU_selects is std_logic_vector(2 downto 0);
