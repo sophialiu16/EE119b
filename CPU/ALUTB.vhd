@@ -84,9 +84,12 @@ architecture TB_ARCHITECTURE of ALUTB is
         begin 
         	EdgeCasesA <= (X"00", X"FF", X"EE", X"80", X"01", X"34");
         	EdgeCasesB <= (X"00", X"FF", X"11", X"80", X"05", X"F0");
+        	
         	AddResult <= (X"00", X"FE", X"FF", X"00", X"06", X"24");
-        	AddFlags <= (X"00", "00", X"11", X"36", X"05", X"F0");
-        	SubResult <= (X"00", X"00", X"11", X"36", X"05", X"F0");
+        	AddFlags <= ("--000010", "--110101", "--010100", "--011011", "--000000", "--000001");
+        	
+        	SubResult <= (X"00", X"00", X"DD", X"00", X"FC", X"44");
+        	SubResult <= ("--000010", "--000010", "--010100", "--000010", "--110101", "--000001");
         	
         	-- initially everything is X, have not started
             ALUOp   <= "XXXX";
@@ -96,6 +99,7 @@ architecture TB_ARCHITECTURE of ALUTB is
         	wait for 100 ns; 
         	
         	-- test add/subtract
+        	-- add no carry
         	for i in 0 to EdgeCasesA'LENGTH-1 loop 
         	   ALUOp <= OP_ADD and OP_NOCARRY; 
         	   ALUSel <= ADDSUBEN; 
@@ -112,6 +116,24 @@ architecture TB_ARCHITECTURE of ALUTB is
 					report  "Add  sreg failure"
 					severity  ERROR;
         	end loop; 
+        	
+        	-- sub no carry --TODO put together
+        	for i in 0 to EdgeCasesA'LENGTH-1 loop 
+        	   ALUOp <= OP_SUB and OP_NOCARRY; 
+        	   ALUSel <= ADDSUBEN; 
+        	   RegA <= EdgeCasesA(i);
+        	   RegB <= EdgeCasesB(i); 
+        	   
+        	   wait for CLK_PERIOD; 
+        	   -- check result
+        	   assert (std_match(SubResult(i), RegOut))
+					report  "Add result failure"
+					severity  ERROR;
+        	   -- check pre-masked sreg
+        	   assert (std_match(SubFlags(i), StatusOut))
+					report  "Add  sreg failure"
+					severity  ERROR;
+        	end loop;
 
             -- add no carry 
             -- add cary 

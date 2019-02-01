@@ -180,8 +180,8 @@ begin
     -- Status Register logic
     
     -- transfer, interrupt bits not set through ALU
-    StatusOut(7) <= 'X'; 
-    StatusOut(6) <= 'X'; --?
+    --StatusOut(7) <= 'X'; 
+    --StatusOut(6) <= 'X'; --?
     
     -- half carry 
     StatusOut(5) <= CarryOut(HALFCARRYBIT);
