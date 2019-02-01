@@ -7,7 +7,7 @@
 -- This file contains constants for the ALU entity and testbench.
 --
 --  Revision History:
---     01/29/19	Sophia Liu initial revision
+--     01/29/19 Sophia Liu initial revision
 -- 
 ----------------------------------------------------------------------------------
 
@@ -38,16 +38,18 @@ package ALUConstants is
     constant OP_ONE     : ALU_OPS := "1111"; -- true     
     
     -- Shifter/Rotator operands 
-    constant OP_LSR     : ALU_OPS := "00--"; -- Logical shift right 
-    constant OP_ASR     : ALU_OPS := "01--"; -- Arithmetic shift right
-    constant OP_ROR     : ALU_OPS := "100-"; -- Rotate right (no carry)
-    constant OP_RORC     : ALU_OPS := "101-"; -- Rotate right (with carry)
+    constant OP_LSR     : ALU_OPS := "--00"; -- Logical shift right 
+    constant OP_ASR     : ALU_OPS := "--01"; -- Arithmetic shift right
+    constant OP_ROR     : ALU_OPS := "-010"; -- Rotate right (no carry)
+    constant OP_RORC     : ALU_OPS := "-110"; -- Rotate right (with carry)
     
     -- Adder/Subtractor operands 
-    constant OP_ADD     : ALU_OPS := "0---";
-    constant OP_SUB     : ALU_OPS := "1---";
-    constant OP_CARRY   : ALU_OPS := "-1--"; 
-    constant OP_NOCARRY : ALU_OPS := "-0--";
+    constant OP_ADDNC     : ALU_OPS := "--00";-- add no carry
+    constant OP_SUBNC     : ALU_OPS := "--11";-- sub no carry
+	 constant OP_ADD     : ALU_OPS := "---0";
+    constant OP_SUB     : ALU_OPS := "---1"; 
+    constant OP_CARRY   : ALU_OPS := "--1-"; -- carry bit 
+    constant OP_NOCARRY : ALU_OPS := "--0-";
     
     -- SReg
     constant HALFCARRYBIT : natural := 3; -- half carry is carry out of bit 3
