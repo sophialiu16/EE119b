@@ -25,14 +25,16 @@
 --        StatusOut - 8 bit status flags to status register
 --
 -- Revision History:
--- 01/24/2019 Sophia Liu Initial revision
--- 01/28/2019 Sophia Liu Initial architecture revision
+-- 01/24/2019   Sophia Liu      Initial revision
+-- 01/28/2019   Sophia Liu      Initial architecture revision
+-- 01/31/2019   Sundar Pandian  Added support for BST, BLD
 --
 ----------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_arith.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
 
 library opcodes; 
 use opcodes.opcodes.all; 
@@ -66,6 +68,8 @@ signal Fout : std_logic_vector(REGSIZE-1 downto 0); -- f block output
 
 signal SRout : std_logic_vector(REGSIZE-1 downto 0); -- shifter/rotator block output 
 
+signal Bout : std_logic_vector(REGSIZE-1 downto 0); -- bit set block output 
+
 --signal SRegBuff : std_logic_vector(REGSIZE-1 downto 0); -- sreg before flag mask
 
 signal RegBuff  : std_logic_vector(REGSIZE-1 downto 0); -- buffer for output result ?
@@ -74,38 +78,39 @@ signal RegBuff  : std_logic_vector(REGSIZE-1 downto 0); -- buffer for output res
 signal NFlag : std_logic; -- negative status flag
 signal CFlag : std_logic; -- carry status flag
 signal VFlag : std_logic; -- signed overflow status flag 
+signal TFlag : std_logic; -- transfer flag
 
 -- component declarations 
 component fullAdder is
-	port(
-		A   		:  in      std_logic;  -- adder input 
-		B 	 		:  in      std_logic;  -- adder input 
-		Subtract    :  in      std_logic;  -- active for subtracting
-		Cin  		:  in      std_logic;  -- carry in value 
-		Cout    	:  out     std_logic;  -- carry out value 
-		Sum  		:  out     std_logic   -- sum of A, B with carry in
-	  );
+    port(
+        A           :  in      std_logic;  -- adder input 
+        B           :  in      std_logic;  -- adder input 
+        Subtract    :  in      std_logic;  -- active for subtracting
+        Cin         :  in      std_logic;  -- carry in value 
+        Cout        :  out     std_logic;  -- carry out value 
+        Sum         :  out     std_logic   -- sum of A, B with carry in
+      );
 end component;
 
 component Mux is
-	port(
-		S0   		:  in      std_logic;  -- mux sel (0) 
-		S1 	 		:  in      std_logic;  -- mux sel(1) 
-		SIn0         :  in      std_logic;  -- mux inputs
-		SIn1         :  in      std_logic;  -- mux inputs
-		SIn2         :  in      std_logic;  -- mux inputs
-		SIn3         :  in      std_logic;  -- mux inputs
-		SOut  		:  out     std_logic   -- mux output
-	  );
+    port(
+        S0          :  in      std_logic;  -- mux sel (0) 
+        S1          :  in      std_logic;  -- mux sel(1) 
+        SIn0         :  in      std_logic;  -- mux inputs
+        SIn1         :  in      std_logic;  -- mux inputs
+        SIn2         :  in      std_logic;  -- mux inputs
+        SIn3         :  in      std_logic;  -- mux inputs
+        SOut        :  out     std_logic   -- mux output
+      );
 end component;  
 
 component DFF is
-	port(
-		Clk   		:  in      std_logic;  -- clock  
-	    En          :  in      std_logic;  -- enable
-		D           :  in      std_logic;  -- D input 
-		Q   		:  out     std_logic   -- Q output
-	  );
+    port(
+        Clk         :  in      std_logic;  -- clock  
+        En          :  in      std_logic;  -- enable
+        D           :  in      std_logic;  -- D input 
+        Q           :  out     std_logic   -- Q output
+      );
 end component;
 
 begin
@@ -113,75 +118,84 @@ begin
     -- adder/subtracter 
     -- low bit, with carry in
     adder0: fullAdder
-    	port map(
-            A   		=> RegA(0),
-            B 	 		=> RegB(0),
+        port map(
+            A           => RegA(0),
+            B           => RegB(0),
             Subtract    => ALUOp(0),
-            Cin  		=> ALUOp(1),
-            Cout    	=> Carryout(0), 
-            Sum  		=> AdderOut(0)
-	  );
-	  -- other bits 
-	  GenAdder:  for i in 1 to REGSIZE - 1 generate
-	  adderi: fullAdder
-    	port map(
-            A   		=> RegA(i),
-            B 	 		=> RegB(i),
+            Cin         => ALUOp(1),
+            Cout        => Carryout(0), 
+            Sum         => AdderOut(0)
+      );
+      -- other bits 
+      GenAdder:  for i in 1 to REGSIZE - 1 generate
+      adderi: fullAdder
+        port map(
+            A           => RegA(i),
+            B           => RegB(i),
             Subtract    => ALUOp(0),
-            Cin  		=> CarryOut(i-1), --?
-            Cout    	=> Carryout(i), 
-            Sum  		=> AdderOut(i)
-	  );
-	  end generate GenAdder;
-	  
+            Cin         => CarryOut(i-1), --?
+            Cout        => Carryout(i), 
+            Sum         => AdderOut(i)
+      );
+      end generate GenAdder;
+      
     -- fblocks 
     GenFBlock:  for i in REGSIZE-1 downto 0 generate
-	  FBlocki: Mux
-    	port map(
-            S0   		=> RegA(i),
-            S1 	 		=> RegB(i),
+      FBlocki: Mux
+        port map(
+            S0          => RegA(i),
+            S1          => RegB(i),
             SIn0        => ALUOp(0),
             SIn1        => ALUOp(1),
             SIn2        => ALUOp(2),
             SIn3        => ALUOp(3),
-            SOut    	=> FOut(i)
-	  );
-	  end generate GenFBlock;
-	  
+            SOut        => FOut(i)
+      );
+      end generate GenFBlock;
+      
     -- shifter/rotator
     -- assign middle and low bits 
     SROut(REGSIZE - 2 downto 0) <= RegA(REGSIZE - 1 downto 1); 
     -- assign high bit 
-	SRMux: Mux
-    	port map(
-            S0   		=> ALUOp(0),
-            S1 	 		=> ALUOp(1),
+    SRMux: Mux
+        port map(
+            S0          => ALUOp(0),
+            S1          => ALUOp(1),
             SIn0        => '0',             -- LSR high bit = 0
             SIn1        => RegA(REGSIZE-1), -- ASR high bit constant
             SIn2        => ALUOp(2),        -- ROR high bit = carry in 
             SIn3        => 'X',
-            SOut    	=> SROut(REGSIZE-1)
-	  );
-	  
-    -- end mux     
+            SOut        => SROut(REGSIZE-1)
+      );
+      
+    -- end mux 
+
+    -- transfer bit loading
+    BIT_OP : for i in 0 to REGSIZE-1 generate
+        Bout(i) <= ALUOp(0) when i = conv_integer(RegB) else
+                   RegA(i);
+    end generate;
+
     GenALUSel:  for i in REGSIZE-1 downto 0 generate
     ALUSelMux: Mux
-    	port map(
-            S0   		=> ALUSel(0),
-            S1 	 		=> ALUSel(1),
+        port map(
+            S0          => ALUSel(0),
+            S1          => ALUSel(1),
             SIn0        => AdderOut(i),
             SIn1        => FOut(i), 
             SIn2        => SROut(i),
-            SIn3        => 'X',
-            SOut    	=> RegBuff(i)
-	  );
-	  end generate GenALUSel;
+            SIn3        => Bout(i),
+            SOut        => RegBuff(i)
+      );
+      end generate GenALUSel;
     
     -- Status Register logic
     
     -- transfer, interrupt bits not set through ALU
     --StatusOut(7) <= 'X'; 
     --StatusOut(6) <= 'X'; --?
+    -- transfer bit
+    StatusOut(6) <= RegA(conv_integer(RegB));
     
     -- half carry 
     StatusOut(5) <= CarryOut(HALFCARRYBIT);
@@ -219,12 +233,12 @@ end behavioral;
 --  out bits, using combinational logic. 
 --
 -- Inputs:
--- 		A: std_logic - 1 bit adder input
---			B: std_logic - 1 bit adder input
--- 		Cin: std_logic - 1 bit carry in input
+--      A: std_logic - 1 bit adder input
+--          B: std_logic - 1 bit adder input
+--      Cin: std_logic - 1 bit carry in input
 --
 -- Outputs:
--- 		Sum: std_logic - 1 bit sum of A, B, and Cin
+--      Sum: std_logic - 1 bit sum of A, B, and Cin
 --       Cout: std_logic - 1 bit carry out value 
 --
 --  Revision History:
@@ -238,21 +252,21 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity fullAdder is
-	port(
-		A   		:  in      std_logic;  -- adder input 
-		B 	 		:  in      std_logic;  -- adder input 
-		Subtract    :  in      std_logic;  -- active for subtracting
-		Cin  		:  in      std_logic;  -- carry in value 
-		Cout    	:  out     std_logic;  -- carry out value 
-		Sum  		:  out     std_logic   -- sum of A, B with carry in
-	  );
+    port(
+        A           :  in      std_logic;  -- adder input 
+        B           :  in      std_logic;  -- adder input 
+        Subtract    :  in      std_logic;  -- active for subtracting
+        Cin         :  in      std_logic;  -- carry in value 
+        Cout        :  out     std_logic;  -- carry out value 
+        Sum         :  out     std_logic   -- sum of A, B with carry in
+      );
 end fullAdder;
 
 architecture fullAdder of fullAdder is
-	begin
-		-- combinational logic for calculating the sum and carry out bit
-		Sum <= A xor B xor Cin xor Subtract;
-		Cout <= ((A xor Subtract) and B) or ((A xor Subtract) and Cin) or (B and Cin);
+    begin
+        -- combinational logic for calculating the sum and carry out bit
+        Sum <= A xor B xor Cin xor Subtract;
+        Cout <= ((A xor Subtract) and B) or ((A xor Subtract) and Cin) or (B and Cin);
 end fullAdder;
 
 
@@ -264,19 +278,19 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity Mux is
-	port(
-		S0   		:  in      std_logic;  -- mux sel (0) 
-		S1 	 		:  in      std_logic;  -- mux sel(1) 
-		SIn0         :  in      std_logic;  -- mux inputs
-		SIn1         :  in      std_logic;  -- mux inputs
-		SIn2         :  in      std_logic;  -- mux inputs
-		SIn3         :  in      std_logic;  -- mux inputs
-		SOut  		:  out     std_logic   -- mux output
-	  );
+    port(
+        S0          :  in      std_logic;  -- mux sel (0) 
+        S1          :  in      std_logic;  -- mux sel(1) 
+        SIn0         :  in      std_logic;  -- mux inputs
+        SIn1         :  in      std_logic;  -- mux inputs
+        SIn2         :  in      std_logic;  -- mux inputs
+        SIn3         :  in      std_logic;  -- mux inputs
+        SOut        :  out     std_logic   -- mux output
+      );
 end Mux;
 
 architecture Mux of Mux is
-	begin
+    begin
     process(SIn0, SIn1, SIn2, SIn3, S0, S1)
     begin  
         if S0 = '0' and S1 = '0' then 
@@ -300,16 +314,16 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity DFF is
-	port(
-		Clk   		:  in      std_logic;  -- clock  
-	    En          :  in      std_logic;  -- enable
-		D           :  in      std_logic;  -- D input 
-		Q   		:  out     std_logic   -- Q output
-	  );
+    port(
+        Clk         :  in      std_logic;  -- clock  
+        En          :  in      std_logic;  -- enable
+        D           :  in      std_logic;  -- D input 
+        Q           :  out     std_logic   -- Q output
+      );
 end DFF;
 
 architecture DFF of DFF is
-	begin
+    begin
     process(clk)
     begin 
         if rising_edge(clk) and En = '1' then 
@@ -317,4 +331,3 @@ architecture DFF of DFF is
         end if; 
     end process; 
 end DFF;
-
