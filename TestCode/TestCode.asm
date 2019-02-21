@@ -309,11 +309,66 @@ EOR2:
 	STS 	$FF00, R16	; should skip if succeeds 
 
 NEG1: 
-	aaaaaaaaaaaaa
+	LDI 	R17, $FF
+	NEG 	R17		 	; NEG $FF
+	IN 		R24, SREG 	; store new sreg
+	LDI 	R25, $FF
+	CPSE 	R24, R25	; check sreg correctly set 
+	NOP					; skip if success
 
-; NEG
-; OR
-; ORI
+	CPI 	R16, $01	; check result 
+	BRBS 	1, NEG2		; branch if equal (zero bit set)   
+	STS 	$FF00, R16	; should skip if succeeds 
+
+NEG2:
+	LDI 	R17, $00
+	NEG 	R17		 	; NEG $FF
+	IN 		R24, SREG 	; store new sreg
+	LDI 	R25, $FF
+	CPSE 	R24, R25	; check sreg correctly set 
+	NOP					; skip if success
+
+	CPI 	R16, $00	; check result 
+	BRBS 	1, NEG3		; branch if equal (zero bit set)   
+	STS 	$FF00, R16	; should skip if succeeds
+
+NEG3:
+	LDI 	R17, $80
+	NEG 	R17		 	; NEG $FF
+	IN 		R24, SREG 	; store new sreg
+	LDI 	R25, $FF
+	CPSE 	R24, R25	; check sreg correctly set 
+	NOP					; skip if success
+
+	CPI 	R16, $80	; check result 
+	BRBS 	1, OR1		; branch if equal (zero bit set)   
+	STS 	$FF00, R16	; should skip if succeeds
+
+OR1:
+	LDI 	R16, $55
+	LDI 	R17, $AA
+	OR  	R16, R17 	; OR $55, $AA
+	IN 		R24, SREG 	; store new sreg
+	LDI 	R25, $FF
+	CPSE 	R24, R25	; check sreg correctly set 
+	NOP					; skip if success
+
+	CPI 	R16, $FF	; check or result 
+	BRBS 	1, ORI1		; branch if equal (zero bit set)   
+	ADIW 	R17, $A 	; should skip if succeeds
+
+ORI1:
+	ORI 	R17, $22 	; OR $AA, $22
+	IN 		R24, SREG 	; store new sreg
+	LDI 	R25, $FF
+	CPSE 	R24, R25	; check sreg correctly set 
+	NOP					; skip if success
+
+	CPI 	R16, $22	; check ori result 
+	BRBS 	1, ORI1		; branch if equal (zero bit set)   
+	ADIW 	R16, $A 	; should skip if succeeds
+
+
 ; ROR
 ; SBC
 ; SBCI
