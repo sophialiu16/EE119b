@@ -37,11 +37,11 @@ ADD1resF:
             LDI     R20, $C3        ;ensure top two bits in SReg not changed
             IN      R20, SReg
             CPI     R25, 0
-            BREQ    ADD1resL
+            BRBS 	1, ADD1resL
             NOP
 ADD1resL:
             CPI     R24, $11
-            BREQ    ADD2F
+            BRBS 	1, ADD2F
             NOP
 ADD2F: ;test ADD Carry Flag
             LDI     R16, $F0
@@ -51,7 +51,7 @@ ADD2F: ;test ADD Carry Flag
             STS     $FE00, R18      ; W 01 FE00
 ADD2res:
             CPI     R16, $42
-            BREQ    ADD3F
+            BRBS 	1, ADD3F
             NOP
 ADD3F: ;test ADD Zero Flag
             LDI     R18, $00
@@ -61,7 +61,7 @@ ADD3F: ;test ADD Zero Flag
             STS     $FE01, R3       ; W 02 FE01
 ADD3res:
             CPI     R16, $00
-            BREQ    ADC1F
+            BRBS 	1, ADC1F
             NOP
 ADC1F: ;test H,S,N flag
             LDI     R16, $0F
@@ -71,7 +71,7 @@ ADC1F: ;test H,S,N flag
             STS     $FE02, R3       ; W 34 FE02
 ADC1res:
             CPI     R16, $90
-            BREQ    ADC2F
+            BRBS 	1, ADC2F
             NOP
 ADC2F: ;test S,V,C flags
             LDI     R18, $80
@@ -87,11 +87,11 @@ ADD4F: ;test S,V,N flags
             STS     $FE00, R3       ; W 0C FE00
 ADC2res:
             CPI     R16, $00
-            BREQ    ADD4res
+            BRBS 	1, ADD4res
             NOP
 ADD4res:
             CPI     R17, $80
-            BREQ    AND1F
+            BRBS 	1, AND1F
             NOP
 AND1F:  ;test S,V,N,Z
             LDI     R16, $00
@@ -103,7 +103,7 @@ AND1F:  ;test S,V,N,Z
             STS     $FF00, R3       ; W 14 FF00
 AND1res:
             CPI     R16, $D0
-            BREQ    AND2F
+            BRBS 	1, AND2F
             NOP
 AND2F: ; test S,V,N,Z
             LDI     R17, $2F
@@ -112,7 +112,7 @@ AND2F: ; test S,V,N,Z
             STS     $FF00, R3       ; W 02 FF00
 AND1res1:
             CPI     R16, $00
-            BREQ    ANDI1F
+            BRBS 	1, ANDI1F
             NOP
 ANDI1F:  ;test S,V,N,Z
             LDI     R16, $D8
@@ -121,7 +121,7 @@ ANDI1F:  ;test S,V,N,Z
             STS     $FF00, R3       ; W 14 FF00
 ANDI1res:
             CPI     R16, $D0
-            BREQ    ANDI2F
+            BRBS 	1, ANDI2F
             NOP
 ANDI2F: ; test S,V,N,Z
             ANDI    R16, $2F        ; ANDI D0, 2F
@@ -129,7 +129,7 @@ ANDI2F: ; test S,V,N,Z
             STS     $FF00, R3       ; W 02 FF00
 ANDI1res1:
             CPI     R16, $00
-            BREQ    ASR1F
+            BRBS 	1, ASR1F
             NOP
 ASR1F:
             LDI     R16, $81
@@ -138,7 +138,7 @@ ASR1F:
             STS     $FF00, R3       ; W 15 FF00
 ASR1res:
             CPI     R16, $C0
-            BREQ    LSR1F
+            BRBS 	1, LSR1F
             NOP
 LSR1F:
             LDI     R16, $81
@@ -147,7 +147,7 @@ LSR1F:
             STS     $FF00, R3       ; W 19 FF00
 LSR1res:
             CPI     R16, $40
-            BREQ    BCLR1
+            BRBS 	1, BCLR1
             NOP
 
 BCLR1:
@@ -183,7 +183,7 @@ BLD1F:
             STS     $FF00, R3       ; W 4A FF00
 BLD1res:
             CPI     R16, $81
-            BREQ    BST1F
+            BRBS 	1, BST1F
             NOP
 BST1F:
             BST     R16, 1
@@ -191,17 +191,17 @@ BST1F:
             STS     $FF00, R3       ; W 02 FF00
 BLD1res1:
             CPI     R16, $81
-            BREQ    INC1res
+            BRBS 	1, INC1res
             NOP
 INC1res:
             INC     R16
             CPI     R16, $82        ; INC $81
-            BREQ    DEC1res
+            BRBS 	1, DEC1res
             NOP
 DEC1res:
             DEC     R16
             CPI     R16, $81        ; DEC $82
-            BREQ    SUB1F
+            BRBS 	1, SUB1F
             NOP
 SUB1F: ;test V
             LDI     R16, $AF
@@ -211,7 +211,7 @@ SUB1F: ;test V
             STS     $FF00, R3       ; W 18 FF00
 SUB1res:
             CPI     R16, $30
-            BREQ    SUBI1F
+            BRBS 	1, SUBI1F
             NOP
 SUBI1F: ;test 0
             SUBI    R16, $30        ; SUBI $30, $30
@@ -219,18 +219,18 @@ SUBI1F: ;test 0
             STS     $FF00, R3       ; W 02 FF00
 SUBI1res:
             CPI     R16, $00
-            BREQ    SWAP1
+            BRBS 	1, SWAP1
             NOP
 SWAP1:
             SWAP    R16             ; SWAP 0
             CPI     R16, $00
-            BREQ    SWAP2
+            BRBS 	1, SWAP2
             NOP
 SWAP2:
             LDI     R16, $80
             SWAP    R16             ; SWAP $80
             CPI     R16, $08
-            BREQ    COM1
+            BRBS 	1, COM1
             NOP
 
 COM1:
@@ -474,7 +474,7 @@ LoadStore:
 
 LdISreg:
 	CPI		R16, $AB	; compare R16 with correct value
-	BREQ 	LdIJmp		; skip if check succeeds
+	BRBS 	1, LdIJmp		; skip if check succeeds
 	NOP
 
 LdIJmp:
@@ -487,12 +487,12 @@ LdIJmp:
 	LD  	R16, X		; R 01 FF23
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    LdXSReg		; skip if check succeeds
+	BRBS 	1,LdXSReg		; skip if check succeeds
 	NOP
 
 LdXSReg:
 	CPI		R16, $01	; compare R16 with correct value
-	BREQ 	LdXJmp		; skip if check succeeds
+	BRBS 	1, LdXJmp		; skip if check succeeds
 	NOP
 
 LdXJmp:
@@ -501,12 +501,12 @@ LdXJmp:
 	LD 		R17, X+		; R 01 FF23
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    LdXpSReg	; skip if check succeeds
+	BRBS 	1,LdXpSReg	; skip if check succeeds
 	NOP
 
 LdXpSreg:
 	CP 		R17, R16 	; compare R17 with initially stored X
-	BREQ 	LdXpJmp		; skip if check succeeds
+	BRBS 	1, LdXpJmp		; skip if check succeeds
 	NOP
 
 LdXpJmp:
@@ -514,7 +514,7 @@ LdXpJmp:
 	STS 	$FF24, R17	; W 22 FF24
 	LD		R18, X		; R 22 FF24
 	CPI     R18, $22	; check X incremented
-	BREQ    LdXpCheck   ; skip if check succeeds
+	BRBS 	1, LdXpCheck   ; skip if check succeeds
 	NOP
 
 LdXpCheck:
@@ -523,12 +523,12 @@ LdXpCheck:
 	LD		R19, -X  	; R 01 FF23
 	IN		R25, SREG 	; store new flags
 	CP		R24, R25    ; check flags unchanged
-	BREQ    LdXdSreg	; skip if check succeeds
+	BRBS 	1, LdXdSreg	; skip if check succeeds
 	NOp
 
 LdXdSreg:
 	CP 		R19, R16	; compare R19 with initially stored X
-	BREQ	LdXdJmp 	; skip if check succeeds
+	BRBS 	1, LdXdJmp 	; skip if check succeeds
 	NOp
 
 LdXdJmp:
@@ -539,12 +539,12 @@ LdXdJmp:
 	LDI 	R28, $45	; set Y low byte to $45
 	LD 		R17, Y+		; R EE FF45
 	CPI		R17, $EE 	; compare R17 with initially stored Y
-	BREQ 	LdYpJmp		; skip if check succeeds
+	BRBS 	1, LdYpJmp		; skip if check succeeds
 	NOP
 
 LdYpJmp:
 	CPI     R28, $46	; check Y incremented
-	BREQ    LdYpCheck   ; skip if check succeeds
+	BRBS 	1, LdYpCheck   ; skip if check succeeds
 	NOP
 
 LdYpCheck:
@@ -552,7 +552,7 @@ LdYpCheck:
 	LD		R19, -Y  	; R EE FF45
 						; decrement Y and load R19
 	CP 		R19, R16	; compare R25 with initially stored Y
-	BREQ	LdYdJmp 	; skip if check succeeds
+	BRBS 	1, LdYdJmp 	; skip if check succeeds
 	NOP
 
 LdYdJmp:
@@ -563,19 +563,19 @@ LdYdJmp:
 	LDI 	R30, $A1	; set Z low byte to $A1
 	LD 		R17, Z+		; R 78 FEA1
 	CP 		R17, R16 	; compare R17 with initially stored Z
-	BREQ 	LdZpJmp		; skip if check succeeds
+	BRBS 	1, LdZpJmp		; skip if check succeeds
 	NOP
 
 LdZpJmp:
 	CPI     R30, $79	; check Z incremented
-	BREQ    LdZpCheck   ; skip if check succeeds
+	BRBS 	1, LdZpCheck   ; skip if check succeeds
 	NOP
 
 LdZpCheck:
 ; LD -Z pre decrement
 	LD		R19, -Z  	; R 78 FEA1
 	CP 		R19, R16	; compare R25 with initially stored Z
-	BREQ	LdZdJmp 	; skip if check succeeds
+	BRBS 	1, LdZdJmp 	; skip if check succeeds
 	NOP
 
 LdZdJmp:
@@ -588,41 +588,41 @@ LdZdJmp:
 	LDD  	R16, Y+5	; R 06 0076
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    LdYQSReg	; skip if check succeeds
+	BRBS 	1, LdYQSReg	; skip if check succeeds
 	NOP
 
 LdYQSReg:
 	CPI		R16, $06	; compare R16 with correct value
-	BREQ 	LdYQJmp		; skip if check succeeds
+	BRBS 	1, LdYQJmp		; skip if check succeeds
 	NOP
 
 LdYQJmp:
 ; LDD Z + q unsigned displacement
 	LDI 	R18, $FF
-	STS 	$002C, R18	; IO Reg addr - W FF 002C
+	STS 	$0023, R18	; IO Reg addr - W FF 002C
 	CLR 	R31			; clear Z high byte to $00
 	LDI 	R30, $22	; set Z low byte to $22
 	IN      R24, SREG	; store flags
-	LDD  	R16, Z+10	; IO Reg addr - R FF 002C
+	LDD  	R16, Z+1	; IO Reg addr - R FF 002C
 						; load R16 with contents of data space Z+10
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    LdZQSReg	; skip if check succeeds
+	BRBS 	1, LdZQSReg	; skip if check succeeds
 	NOP
 
 LdZQSReg:
 	CPI		R16, $FF	; compare R16 with correct value
-	BREQ 	LdZQJmp		; skip if check succeeds
+	BRBS 	1, LdZQJmp		; skip if check succeeds
 	NOP
 
 LdZQJmp:
 ; LDS
-	LDI		R18, $2B 
+	LDI		R18, $2B
 	STS		$FF81, R18	; W 2B FF81
 	LDS 	R20, $FF81	; R 2B FF81
 						; load R20 with consents of data space $10FF
 	CPI		R20, $2B	; compare R20 with correct value
-	BREQ 	LdSJmp		; skip if check succeeds
+	BRBS 	1, LdSJmp		; skip if check succeeds
 	NOP
 
 LdSJmp:
@@ -633,17 +633,17 @@ LdSJmp:
 	MOV 	R21, R20	; copy R20 to R21
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    MovSReg		; skip if check succeeds
+	BRBS 	1, MovSReg		; skip if check succeeds
 	NOP
 
 MovSreg:
 	CP 		R21, R20 	; check R21 = R20
-	BREQ 	MovJmp		; skip if check succeeds
+	BRBS 	1, MovJmp		; skip if check succeeds
 	NOP
 
 MovJmp:
 	CPI 	R21, $26  	; check R20 copied to R21
-	BREQ	MovJmp1		; skip if check succeeds
+	BRBS 	1, MovJmp1		; skip if check succeeds
 	NOP
 
 MovJmp1:
@@ -655,50 +655,50 @@ MovJmp1:
 	ST  	X, R22		; W 58 007B
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    StXSReg		; skip if check succeeds
+	BRBS 	1, StXSReg		; skip if check succeeds
 	NOP
 
 StXSReg:
 	LD 		R23, X		; R 58 007B
 	CP		R23, R22	; compare R23 with R22 (=$58)
-	BREQ	StXJmp		; skip if check succeeds
+	BRBS 	1, StXJmp		; skip if check succeeds
 	NOP
 
 StXJmp:
 ; St X + post increment
 	LDI 	R16, $12	; load R16 with $12
 	ST  	X+, R16		; W 12 007B
-	
-	LDI 	R18, $7C	; check X incremented 
+
+	LDI 	R18, $7C	; check X incremented
 	LDI 	R19, $00 	; compare X with R19:R18
 	CP 		R26, R18	; compare low byte
 	CPC 	R27, R19	; compare high byte
-	BREQ   	StXpCheck	; skip if check succeeds
+	BRBS 	1, StXpCheck	; skip if check succeeds
 	NOP
 
 StXpCheck:
 	LD 		R17, -X		; R 12 007B
-	CPI		R17, $12	; check loaded correctly 
-	BREQ	StXpJmp		; skip if check succeeds
+	CPI		R17, $12	; check loaded correctly
+	BRBS 	1, StXpJmp		; skip if check succeeds
 	NOP
 
 StXpJmp:
-; St -X pre decrement 
+; St -X pre decrement
 	; X $007B
 	LDI     R18, $44    ; load R18 with $44
 	ST  	-X, R18		; W 44 007A
 
-	LDI 	R18, $7A	; check X incremented 
+	LDI 	R18, $7A	; check X incremented
 	LDI 	R19, $00 	; compare X with R19:R18
 	CP 		R26, R18	; compare low byte
 	CPC 	R27, R19	; compare high byte
-	BREQ   	StXdCheck	; skip if check succeeds
+	BRBS 	1, StXdCheck	; skip if check succeeds
 	NOP
 
 StXdCheck:
 	LD 		R19, X		; R 44 007A
-	CP 		R19, $44    ; check stored correctly 
-	BREQ 	StXdJmp		; skip if check succeeds
+	CPI		R19, $44    ; check stored correctly
+	BRBS 	1, StXdJmp		; skip if check succeeds
 	NOP
 
 StXdJmp:
@@ -706,59 +706,59 @@ StXdJmp:
 	CLR		R29			; clear Y high byte
 	LDI 	R28, $19	; set Y low byte to $19
 	LDI 	R16, $12	; load R16 with $12
-	ST  	Y+, R16		; reg remap addr - W 12 0019 
+	ST  	Y+, R16		; reg remap addr - W 12 0019
 
-	LDI 	R18, $1A	; check Y incremented 
+	LDI 	R18, $1A	; check Y incremented
 	LDI 	R19, $00 	; compare Y with R19:R18
 	CP 		R28, R18	; compare low byte
 	CPC 	R29, R19	; compare high byte
 
-	BREQ   	StYpCheck	; skip if check succeeds
+	BRBS 	1, StYpCheck	; skip if check succeeds
 	NOP
 
 StYpCheck:
 	LD 		R17, -Y		; load R17 with pre decremented Y
 	CPI		R17, $12	; compare R17 with R16 (=$12)
-	BREQ	StYpJmp		; skip if check succeeds
+	BRBS 	1, StYpJmp		; skip if check succeeds
 	NOP
 
 StYpJmp:
 ; St -Y pre decrement
 	; Y $0019
 	LDI     R18, $44    ; load R18 with $44
-	ST  	-Y, R18		; store to R24 - W 44 0018 
+	ST  	-Y, R18		; store to R24 - W 44 0018
 
-	LDI 	R18, $18	; check Y incremented 
+	LDI 	R18, $18	; check Y incremented
 	LDI 	R19, $00 	; compare Y with R19:R18
 	CP 		R28, R18	; compare low byte
 	CPC 	R29, R19	; compare high byte
-	BREQ   	StYdCheck	; skip if check succeeds
+	BRBS 	1, StYdCheck	; skip if check succeeds
 	NOP
 
 StYdCheck:
 	LD 		R19, Y+		; load R19 with Y (remapped, R24)
-	CP 		R19, $44    ; check loaded from Y correctly 
-	BREQ 	StYdJmp		; skip if check succeeds
+	CPI		R19, $44    ; check loaded from Y correctly
+	BRBS 	1, StYdJmp		; skip if check succeeds
 	NOP
 
-StYdJmp1:
+StYdJmp:
 ; St Z + post increment
 	CLR		R31			; clear Z high byte
 	LDI 	R30, $69	; set Z low byte to $69
-	LDI 	R16, $12	; load R16 with $12
+	LDI 	R16, $23	; load R16 with $12
 	ST  	Z+, R16		; W 12 0069
 
-	LDI 	R18, $6A	; check Z incremented 
+	LDI 	R18, $6A	; check Z incremented
 	LDI 	R19, $00 	; compare Z with R19:R18
 	CP 		R30, R18	; compare low byte
 	CPC 	R31, R19	; compare high byte
-	BREQ   	StZpCheck	; skip if check succeeds
+	BRBS 	1, StZpCheck	; skip if check succeeds
 	NOP
 
 StZpCheck:
 	LD 		R17, -Z		; load R17 with pre decremented Z
-	CP		R17, $12	; check stored/loaded correctly 
-	BREQ	StZpJmp		; skip if check succeeds
+	CPI		R17, $23	; check stored/loaded correctly
+	BRBS 	1, StZpJmp		; skip if check succeeds
 	NOP
 
 StZpJmp:
@@ -766,20 +766,20 @@ StZpJmp:
 	LDI     R18, $44    ; load R18 with $44
 	ST  	-Z, R18		; W 44 0068
 
-	LDI 	R18, $68	; check Z decremented 
+	LDI 	R18, $68	; check Z decremented
 	LDI 	R19, $00 	; compare Z with R19:R18
 	CP 		R30, R18	; compare low byte
 	CPC 	R31, R19	; compare high byte
-	BREQ   	StZdCheck	; skip if check succeeds
+	BRBS 	1, StZdCheck	; skip if check succeeds
 	NOP
 
-StZdCheck1:
+StZdCheck:
 	LD 		R19, Z		; load R19 with Z
-	CP 		R19, $44    ; check stored/loaded correctly 
-	BREQ 	StZdJmp		; skip if check succeeds
+	CPI		R19, $44    ; check stored/loaded correctly
+	BRBS 	1, StZdJmp		; skip if check succeeds
 	NOP
 
-StZdJmp1:
+StZdJmp:
 ; STD Y + q
 	CLR 	R29			; clear high byte of Y
 	LDI 	R28, $77	; load low byte of Y with $77
@@ -787,7 +787,7 @@ StZdJmp1:
 	STD  	Y + $11, R20; W 73 0088
 	LDD		R21, Y + $11 	; R 73 0088
 	CP 		R20, R21		; compare R20 and R21
-	BREQ	StdYqJmp		; skip if check succeeds
+	BRBS 	1, StdYqJmp		; skip if check succeeds
 	NOP
 
 StdYqJmp:
@@ -798,7 +798,7 @@ StdYqJmp:
 	STD  	Z + $11, R20; W 73 0078
 	LDD		R21, Z + $11    ; R 73 0078
 	CP 		R20, R21		; compare R20 and R21
-	BREQ	StdZqJmp		; skip if check succeeds
+	BRBS 	1, StdZqJmp		; skip if check succeeds
 	NOP
 
 StdZqJmp:
@@ -807,7 +807,7 @@ StdZqJmp:
 	STS 	$FE57, R16	; W 99 FE57
 	LDS 	R17, $FE57  ; R 99 FE57
 	CP 		R16, R17 	; compare R16 and R17
-	BREQ	StsJmp		; skip if check succeeds
+	BRBS 	1, StsJmp		; skip if check succeeds
 	NOP
 
 StsJmp:
@@ -820,7 +820,7 @@ StsJmp:
 	PUSH 	R18			; push R18 onto stack
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    PushSReg	; skip if check succeeds
+	BRBS 	1, PushSReg	; skip if check succeeds
 	NOP
 
 PushSReg:
@@ -833,21 +833,21 @@ PushSReg:
 	POP 	R19			; pop R19 off stack
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    PopSReg		; skip if check succeeds
+	BRBS 	1, PopSReg		; skip if check succeeds
 	NOP
 ; check sp dec
 PopSReg:
 	CPI		R19, $EF 	; check R19 popped off stack
-	BREQ	PopJmp		; skip if check succeeds
+	BRBS 	1, PopJmp		; skip if check succeeds
 	NOP
 
 PopJmp:
 	POP 	R18			; pop R18 off stack
 	CPI		R18, $50 	; check R18 popped off stack
-	BREQ	PopJmp		; skip if check succeeds
+	BRBS 	1, PopJmp1	; skip if check succeeds
 	NOP
 
-PopJmp:
+PopJmp1:
 ; Unconditional branches
 ; JMP
 	IN      R24, SREG	; store flags
@@ -857,7 +857,7 @@ PopJmp:
 JmpTest:
 	IN      R25, SREG	; store new flags
 	CP 		R24, R25    ; check flags unchanged
-	BREQ    JumpSReg	; skip if check succeeds
+	BRBS 	1, JumpSReg	; skip if check succeeds
 	NOP
 
 JumpSReg:
@@ -868,20 +868,20 @@ JumpSReg:
 	IN      R25, SREG	; store new flags
 	CPSE 	R24, R25    ; check flags unchanged
 	NOP
-	;JMP 	CallSReg 	; jump test 
-	;NOP 
-	;NOP 
+	;JMP 	CallSReg 	; jump test
+	;NOP
+	;NOP
 
 CallSReg:
 ; ICALL
-	LDI 	R30, $7A
-	LDI 	R31, $02	; load Z with ICallTest address ($019D) --TODO
+	LDI 	R30, $AC
+	LDI 	R31, $02	; load Z with ICallTest address ($02AC) 
 	IN      R24, SREG	; store flags
 	ICALL				; skip to ICallTest if succeeds
 	IN      R25, SREG	; store new flags
 	CPSE 	R24, R25    ; check flags unchanged
-	;BREQ    ICallSReg	; skip if check succeeds
-	NOP 
+	;BRBS 	1, ICallSReg	; skip if check succeeds
+	NOP
 
 ICallSreg:
 ; I/O tests
@@ -893,7 +893,7 @@ ICallSreg:
 	NOP
 
 End:
-	RET		; return to very top 
+	RET		; return to very top
 	NOP
 
 
