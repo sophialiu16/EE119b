@@ -69,11 +69,13 @@ unsigned int  GCD(unsigned int a, unsigned int b)
 
     // check lsb for even/odd
     // remove 2^n
-    while (a%2 ==0 && b%2==0)  {
+    for (int i = 0; i <= 31; i++){
         iter_cnt++;
-        k++;
-        a = a >> 1;
-        b = b >> 1;
+        if (a%2 ==0 && b%2==0)  {
+            k++;
+            a = a >> 1;
+            b = b >> 1;
+        }
     }
 
     // assign t
@@ -85,24 +87,30 @@ unsigned int  GCD(unsigned int a, unsigned int b)
     }
 
     // steins
-    while (t != 0){
+    for (int i = 0; i <= 45; i++){ //TODO count??
         iter_cnt++;
-        while (t%2 == 0){
-            t /= 2;
+        if (t != 0){
+            if (t%2 == 0){
+                t /= 2;
+            }
+            else{
+                if (t>0) {
+                    a = t;
+                } else {
+                    b = -t;
+                }
+                t = a - b;
+            }
         }
-        if (t>0) {
-            a = t;
-        } else {
-            b = -t;
-        }
-        t = a - b;
     }
 
     // put 2 back in
-    while (k != 0){
+    for (int i = 0; i <= 31; i++){
         iter_cnt++;
-        a *= 2;
-        k--;
+        if (k != 0){
+            a *= 2;
+            k--;
+        }
     }
 
     /* done computing the GCD, save the iteration count and return */
