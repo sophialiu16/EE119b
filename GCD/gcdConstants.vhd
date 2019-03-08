@@ -17,11 +17,11 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package gcdConstants is
-    constant CLK_PERIOD : time := 20 ns;
-    constant TEST_SIZE : natural := 100; 
+    constant CLK_PERIOD : time := 100 ns;
+    constant TEST_SIZE : natural := 1000; 
     
-    constant NUMBITS_TEST : natural := 7; 
-    constant NUMBITST_TEST : natural := 20; --??? 
+    constant NUMBITS_TEST : natural := 15; 
+    constant NUMBITST_TEST : natural := 40; --??? 
 
 end package gcdConstants;
 
