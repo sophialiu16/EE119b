@@ -317,9 +317,9 @@ use work.gcdConstants.all;
 
 entity GCDSys is
         generic (
-            NumBits : natural := 15; --31;
-            NumBitsK : natural := 3; --4; 
-            NumBitsT : natural := 40 --45
+            NumBits : natural := 15; 
+            NumBitsK : natural := 3;
+            NumBitsT : natural := 43 
         );
         port(
             Clk   :  in  std_logic; -- system clock
