@@ -1,3 +1,4 @@
+
 ----------------------------------------------------------------------------
 --
 -- EE119b HW7 Sophia Liu
@@ -13,8 +14,7 @@
 -- 11/16/18 Sophia Liu Updated comments
 --
 ----------------------------------------------------------------------------
-
-library.ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
@@ -41,7 +41,7 @@ architecture GCDPE1 of GCDPE1 is
         begin
 		if rising_edge(clk) then
             -- if a, b even then remove factor of 2
-            if(ain(0) = 0 and bin(0) = 0) then
+            if(ain(0) = '0' and bin(0) = '0') then
                 kout <= std_logic_vector(unsigned(kin) + 1); -- increment k in 2^k
                 aout <= '0' & ain(NumBits downto 1); -- divide a by 2
                 bout <= '0' & bin(NumBits downto 1); -- divide b by 2
@@ -66,7 +66,7 @@ end GCDPE1;
 --
 ----------------------------------------------------------------------------
 
-library.ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
@@ -93,7 +93,7 @@ architecture GCDPE2 of GCDPE2 is
         begin
 		if rising_edge(clk) then
             -- if a is odd, t = -b
-            if(ain(0) = 1) then
+            if(ain(0) = '1') then
                 tout <= std_logic_vector(unsigned(not(bin)) + 1); -- twos complement
             else
                 tout <= ain;
@@ -121,7 +121,7 @@ end GCDPE2;
 --
 ----------------------------------------------------------------------------
 
-library.ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
@@ -158,7 +158,7 @@ architecture GCDPE3 of GCDPE3 is
                         tout <= tin - bin; -- TODO subtractor
                     else
                         aout <= ain;
-                        bout <= std_logic_vector(unsigned(not t) + 1);
+                        bout <= std_logic_vector(unsigned(not tin) + 1);
                         tout <= ain + tin; -- TODO adder
                     end if;
                 end if;
@@ -184,7 +184,7 @@ end GCDPE3;
 --
 ----------------------------------------------------------------------------
 
-library.ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
@@ -208,7 +208,7 @@ architecture GCDPE4 of GCDPE4 is
         begin
 		if rising_edge(clk) then
             -- put factor of 2 back in
-            if(unsigned(k) > 0) then
+            if(unsigned(kin) > 0) then
                 kout <= std_logic_vector(unsigned(kin) - 1); -- decrement k
                 aout <= ain(NumBits - 1 downto 0) & '0'; -- multiply a by 2
             end if;
@@ -232,7 +232,7 @@ end GCDPE4;
 --
 ----------------------------------------------------------------------------
 
-library.ieee;
+library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
@@ -254,11 +254,11 @@ end GCDSys;
 
 architecture GCDSys of GCDSys is
     -- internal signals
-    type BusArr is array (natural range <>) of std_logic_vector(natural range <>);
-    signal abus : BusArr(NumBits * 2 + NumBitsT + 4 downto 0)(NumBits downto 0); --TODO size
-    signal bbus : BusArr(NumBits + NumBitsT + 3 downto 0)(NumBits downto 0); -- TODO consts
-    signal kbus : BusArr(NumBits * 2 + NumBitsT + 4 + NumBits downto 0)(NumBits downto 0);
-    signal tbus : BusArr(NumBits + NumBitsT + 3 downto NumBits + 2)(NumBits downto 0);
+    type BusArr is array (natural range <>) of std_logic_vector(NumBits downto 0); 
+    signal abus : BusArr(NumBits * 2 + NumBitsT + 4 downto 0); --TODO size
+    signal bbus : BusArr(NumBits + NumBitsT + 3 downto 0); -- TODO consts
+    signal kbus : BusArr(NumBits * 2 + NumBitsT + 4 + NumBits downto 0);
+    signal tbus : BusArr(NumBits + NumBitsT + 3 downto NumBits + 2);
 
     -- PE component declarations
     component GCDPE1 is
@@ -331,7 +331,7 @@ architecture GCDSys of GCDSys is
             GCDPE1i: GCDPE1
             generic map(
                 NumBits => NumBits
-            );
+            )
             port map(
                 Clk   => Clk,
                 ain   => abus(i),
@@ -339,14 +339,14 @@ architecture GCDSys of GCDSys is
                 kin   => kbus(i),
                 aout  => abus(i+1),
                 bout  => bbus(i+1),
-                kout  => kout(i+1)
+                kout  => kbus(i+1)
             );
         end generate GCDPE1Gen;
 
         GCDPE2i: GCDPE2
             generic map(
                 NumBits => NumBits
-            );
+            )
             port map(
                 Clk   => Clk,
                 ain   => abus(NumBits + 1),
@@ -362,7 +362,7 @@ architecture GCDSys of GCDSys is
             GCDPE3i: GCDPE3
                 generic map(
                     NumBits => NumBits
-                );
+                )
                 port map(
                     Clk   => Clk,
                     ain   => abus(i + NumBits + 2),
@@ -380,7 +380,7 @@ architecture GCDSys of GCDSys is
             GCDPE4i: GCDPE4
                 generic map(
                     NumBits => NumBits
-                );
+                )
                 port map(
                     Clk   => Clk,
                     ain   => abus(i + NumBitsT + NumBits + 3),
