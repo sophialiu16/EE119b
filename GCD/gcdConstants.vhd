@@ -28,7 +28,7 @@ end package gcdConstants;
 
 ----------------------------------------------------------------------------
 --
---  1 Bit Full Adder
+--  1 Bit Full Subtracter
 --
 --  Implementation of a full adder. This entity takes the one bit
 --  inputs A and B with a carry in input and outputs the sum and carry
@@ -53,19 +53,19 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity fullAdder is
+entity fullSub is
     port(
         A           :  in      std_logic;  -- adder input
         B           :  in      std_logic;  -- adder input
-        Cin         :  in      std_logic;  -- carry in value
+        Cin         :  in      std_logic;  -- borrow in value
         Cout        :  out     std_logic;  -- carry out value
-        Sum         :  out     std_logic   -- sum of A, B with carry in
+        Diff         :  out     std_logic   -- sum of A, B with carry in
       );
-end fullAdder;
+end fullSub;
 
-architecture fullAdder of fullAdder is
+architecture fullSub of fullSub is
     begin
-        -- combinational logic for calculating A+B with carry in and out bits
-        Sum <= A xor B xor Cin;
-        Cout <= (A and B) or (A and Cin) or (B and Cin);
-end fullAdder;
+        -- combinational logic for calculating A-B with carry in and out bits
+        Diff <= A xor B xor Cin;
+        Cout <= (A and B) or (A and (not Cin)) or (B and (not Cin));
+end fullSub;

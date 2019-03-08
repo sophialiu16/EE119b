@@ -21,17 +21,17 @@ use ieee.std_logic_unsigned.all;
 
 entity GCDPE1 is
         generic (
-            NumBits : natural := 31
-            --NumBitsK : natural := 4 --TODO make k smaler
+            NumBits : natural := 15;
+            NumBitsK : natural := 3 
         );
         port(
             Clk   :  in  std_logic; -- system clock
             ain   :  in  std_logic_vector(NumBits downto 0);
             bin   :  in  std_logic_vector(NumBits downto 0);
-            kin   :  in  std_logic_vector(NumBits downto 0);
+            kin   :  in  std_logic_vector(NumBitsK downto 0);
             aout  :  out std_logic_vector(NumBits downto 0);
             bout  :  out std_logic_vector(NumBits downto 0);
-            kout  :  out std_logic_vector(NumBits downto 0)
+            kout  :  out std_logic_vector(NumBitsK downto 0)
         );
 end GCDPE1;
 
@@ -77,16 +77,17 @@ use ieee.std_logic_unsigned.all;
 
 entity GCDPE2 is
         generic (
-            NumBits : natural := 31
+            NumBits : natural := 15;
+            NumBitsK : natural := 3 
         );
         port(
             Clk   :  in  std_logic; -- system clock
             ain   :  in  std_logic_vector(NumBits downto 0);
             bin   :  in  std_logic_vector(NumBits downto 0);
-            kin   :  in  std_logic_vector(NumBits downto 0);
+            kin   :  in  std_logic_vector(NumBitsK downto 0);
             aout  :  out std_logic_vector(NumBits downto 0);
             bout  :  out std_logic_vector(NumBits downto 0);
-            kout  :  out std_logic_vector(NumBits downto 0);
+            kout  :  out std_logic_vector(NumBitsK downto 0);
             tout  :  out std_logic_vector(NumBits downto 0); -- TODO size
             toutS :  out std_logic
         );
@@ -135,24 +136,41 @@ use ieee.std_logic_unsigned.all;
 
 entity GCDPE3 is
         generic (
-            NumBits : natural := 31
+            NumBits : natural := 15;
+            NumBitsK : natural := 3 
         );
         port(
             Clk   :  in  std_logic; -- system clock
             ain   :  in  std_logic_vector(NumBits downto 0);
             bin   :  in  std_logic_vector(NumBits downto 0);
-            kin   :  in  std_logic_vector(NumBits downto 0);
+            kin   :  in  std_logic_vector(NumBitsK downto 0);
             tin   :  in  std_logic_vector(NumBits downto 0);
             tinS  :  in  std_logic; 
             aout  :  out std_logic_vector(NumBits downto 0);
             bout  :  out std_logic_vector(NumBits downto 0);
-            kout  :  out std_logic_vector(NumBits downto 0);
+            kout  :  out std_logic_vector(NumBitsK downto 0);
             tout  :  out std_logic_vector(NumBits downto 0);
             toutS :  out std_logic
         );
 end GCDPE3;
 
 architecture GCDPE3 of GCDPE3 is
+
+--    component fullSub is
+--    port(
+--        A           :  in      std_logic;  -- adder input
+--        B           :  in      std_logic;  -- adder input
+--        Cin         :  in      std_logic;  -- carry in value
+--        Cout        :  out     std_logic;  -- carry out value
+--        Diff         :  out     std_logic   -- sum of A, B with carry in
+--      );
+--    end component;
+    
+--    signal SubA : std_logic_vector(NumBits downto 0);
+--    signal SubB : std_logic_vector(NumBits downto 0);
+--    signal CarryOut : std_logic_vector(NumBits + 1 downto 0);
+--    signal SubOut : std_logic_vector(NumBits downto 0);
+        
     begin
 	process(clk)
         begin
@@ -167,12 +185,16 @@ architecture GCDPE3 of GCDPE3 is
                     if (tinS = '0') then -- if t > 0 --------------------------------
                         aout <= tin;    
                         bout <= bin;
-                        
+                        -- larggeeee
                         if (unsigned(tin) >= unsigned(bin)) then 
                             tout <= tin - bin; -- TODO subtractor
+--                            SubA <= tin; 
+--                            SubB <= bin; 
                             toutS <= '0'; 
                         else 
                             tout <= bin - tin; 
+--                            SubA <= bin; 
+--                            SubB <= tin; 
                             toutS <= '1'; -- t is negative 
                         end if; 
                     else -- t < 0 
@@ -181,12 +203,17 @@ architecture GCDPE3 of GCDPE3 is
                         
                         if (unsigned(ain) >= unsigned(tin)) then 
                             tout <= ain - tin; 
+--                            SubA <= ain; 
+--                            SubB <= tin; 
                             toutS <= '0'; 
                         else 
                             tout <= tin - ain; 
+--                            SubA <= tin; 
+--                            SubB <= ain; 
                             toutS <= '1'; 
                         end if; 
                     end if;
+                    --tout <= SubOut; 
                 end if;
             else -- t == 0 
                 aout <= ain; -- done with steins, pass signals through 
@@ -197,6 +224,20 @@ architecture GCDPE3 of GCDPE3 is
             kout <= kin; -- pass k through 
 		end if;
 	end process;
+	
+--	CarryOut(0) <= '0'; 
+--	-- n bit subtracter 
+--	GenSubi : for i in NumBits downto 0 generate 
+--	subi: fullSub
+--    port map(
+--        A           => SubA(i),
+--        B           => SubB(i),
+--        Cin         => CarryOut(i),
+--        Cout        => Carryout(i+1),
+--        Diff        => SubOut(i)
+--    );
+--	end generate GenSubi; 
+	
 end GCDPE3;
 
 ----------------------------------------------------------------------------
@@ -222,14 +263,15 @@ use ieee.std_logic_unsigned.all;
 
 entity GCDPE4 is
         generic (
-            NumBits : natural := 31
+            NumBits : natural := 15;
+            NumBitsK : natural := 3 
         );
         port(
             Clk   :  in  std_logic; -- system clock
             ain   :  in  std_logic_vector(NumBits downto 0);
-            kin   :  in  std_logic_vector(NumBits downto 0);
+            kin   :  in  std_logic_vector(NumBitsK downto 0);
             aout  :  out std_logic_vector(NumBits downto 0);
-            kout  :  out std_logic_vector(NumBits downto 0)
+            kout  :  out std_logic_vector(NumBitsK downto 0)
         );
 end GCDPE4;
 
@@ -275,8 +317,9 @@ use work.gcdConstants.all;
 
 entity GCDSys is
         generic (
-            NumBits : natural := 31;
-            NumBitsT : natural := 45
+            NumBits : natural := 15; --31;
+            NumBitsK : natural := 3; --4; 
+            NumBitsT : natural := 40 --45
         );
         port(
             Clk   :  in  std_logic; -- system clock
@@ -289,42 +332,46 @@ end GCDSys;
 architecture GCDSys of GCDSys is
     -- internal signals
     type BusArr is array (natural range <>) of std_logic_vector(NumBits downto 0); 
-    signal abus : BusArr(NumBits * 2 + NumBitsT + 4 downto 0); --TODO size
-    signal bbus : BusArr(NumBits + NumBitsT + 3 downto 0); -- TODO consts
-    signal kbus : BusArr(NumBits * 2 + NumBitsT + 4 + NumBits downto 0);
+    signal abus : BusArr(NumBits * 2 + NumBitsT + 4 downto 0); --TODO consts
+    signal bbus : BusArr(NumBits + NumBitsT + 3 downto 0); 
     signal tbus : BusArr(NumBits + NumBitsT + 3 downto NumBits + 2);
-
+    
+    type KBusArr is array (natural range <>) of std_logic_vector(NumBitsK downto 0); 
+    signal kbus : KBusArr(NumBits * 2 + NumBitsT + 4 + NumBits downto 0);
+    
     type SBusArr is array (natural range <>) of std_logic; 
     signal tsbus : SBusArr(NumBits + NumBitsT + 3 downto NumBits + 2); 
     
     -- PE component declarations
     component GCDPE1 is
             generic (
-                NumBits : natural := 31
+                NumBits : natural := 15;
+                NumBitsK : natural := 3 
             );
             port(
                 Clk   :  in  std_logic; -- system clock
                 ain   :  in  std_logic_vector(NumBits downto 0);
                 bin   :  in  std_logic_vector(NumBits downto 0);
-                kin   :  in  std_logic_vector(NumBits downto 0);
+                kin   :  in  std_logic_vector(NumBitsK downto 0);
                 aout  :  out std_logic_vector(NumBits downto 0);
                 bout  :  out std_logic_vector(NumBits downto 0);
-                kout  :  out std_logic_vector(NumBits downto 0)
+                kout  :  out std_logic_vector(NumBitsK downto 0)
             );
     end component;
 
     component GCDPE2 is
             generic (
-                NumBits : natural := 31
+                NumBits : natural := 15;
+                NumBitsK : natural := 3 
             );
             port(
                 Clk   :  in  std_logic; -- system clock
                 ain   :  in  std_logic_vector(NumBits downto 0);
                 bin   :  in  std_logic_vector(NumBits downto 0);
-                kin   :  in  std_logic_vector(NumBits downto 0);
+                kin   :  in  std_logic_vector(NumBitsK downto 0);
                 aout  :  out std_logic_vector(NumBits downto 0);
                 bout  :  out std_logic_vector(NumBits downto 0);
-                kout  :  out std_logic_vector(NumBits downto 0);
+                kout  :  out std_logic_vector(NumBitsK downto 0);
                 tout   :  out std_logic_vector(NumBits downto 0);
                 toutS  :  out std_logic
             );
@@ -332,18 +379,19 @@ architecture GCDSys of GCDSys is
 
     component GCDPE3 is
             generic (
-                NumBits : natural := 31
+                NumBits : natural := 15;
+                NumBitsK : natural := 3 
             );
             port(
                 Clk   :  in  std_logic; -- system clock
                 ain   :  in  std_logic_vector(NumBits downto 0);
                 bin   :  in  std_logic_vector(NumBits downto 0);
-                kin   :  in  std_logic_vector(NumBits downto 0);
+                kin   :  in  std_logic_vector(NumBitsK downto 0);
                 tin   :  in  std_logic_vector(NumBits downto 0);
                 tinS  :  in  std_logic;
                 aout  :  out std_logic_vector(NumBits downto 0);
                 bout  :  out std_logic_vector(NumBits downto 0);
-                kout  :  out std_logic_vector(NumBits downto 0);
+                kout  :  out std_logic_vector(NumBitsK downto 0);
                 tout  :  out std_logic_vector(NumBits downto 0);
                 toutS :  out std_logic
             );
@@ -351,14 +399,15 @@ architecture GCDSys of GCDSys is
 
     component GCDPE4 is
             generic (
-                NumBits : natural := 31
+                NumBits : natural := 15;
+                NumBitsK : natural := 3 
             );
             port(
                 Clk   :  in  std_logic; -- system clock
                 ain   :  in  std_logic_vector(NumBits downto 0);
-                kin   :  in  std_logic_vector(NumBits downto 0);
+                kin   :  in  std_logic_vector(NumBitsK downto 0);
                 aout  :  out std_logic_vector(NumBits downto 0);
-                kout  :  out std_logic_vector(NumBits downto 0)
+                kout  :  out std_logic_vector(NumBitsK downto 0)
             );
     end component;
 
@@ -370,7 +419,8 @@ architecture GCDSys of GCDSys is
         GCDPE1Gen : for i in 0 to NumBits generate
             GCDPE1i: GCDPE1
             generic map(
-                NumBits => NumBits
+                NumBits => NumBits,
+                NumBitsK => NumBitsK
             )
             port map(
                 Clk   => Clk,
@@ -385,7 +435,8 @@ architecture GCDSys of GCDSys is
 
         GCDPE2i: GCDPE2
             generic map(
-                NumBits => NumBits
+                NumBits => NumBits,
+                NumBitsK => NumBitsK
             )
             port map(
                 Clk   => Clk,
@@ -402,7 +453,8 @@ architecture GCDSys of GCDSys is
         GCDPE3Gen : for i in 0 to NumBitsT generate
             GCDPE3i: GCDPE3
                 generic map(
-                    NumBits => NumBits
+                    NumBits => NumBits,
+                    NumBitsK => NumBitsK
                 )
                 port map(
                     Clk   => Clk,
@@ -422,7 +474,8 @@ architecture GCDSys of GCDSys is
         GCDPE4Gen : for i in 0 to NumBits generate
             GCDPE4i: GCDPE4
                 generic map(
-                    NumBits => NumBits
+                    NumBits => NumBits,
+                    NumBitsK => NumBitsK
                 )
                 port map(
                     Clk   => Clk,
