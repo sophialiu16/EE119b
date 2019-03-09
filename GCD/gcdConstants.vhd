@@ -17,9 +17,9 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package gcdConstants is
-    -- number of bits to test (change for testbench) 
-    constant NBITS : natural := 16; 
-    constant NBITS_K : natural := 4; -- NBITS_K = log2(NBITS) 
+	-- constants specifying number of bits for gcd calc
+    constant NBITS : natural := 16; -- number of bits to test (change this for testbench)
+    constant NBITS_K : natural := 4; -- NBITS_K = log2(NBITS) (change this for testbench)
     
     -- constants based on nbits 
     constant NUMBITS_TEST : natural := NBITS - 1;   

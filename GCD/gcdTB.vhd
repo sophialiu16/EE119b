@@ -72,7 +72,7 @@ begin
             variable  j  :  integer; 
             -- for random number generator 
             variable Seed1, Seed2: positive; 
-            variable Rand : real; 				-- real number between (0, 1)
+            variable Rand : real; 			-- real number between (0, 1)
             variable RandRange : real := 2** (real(NUMBITS_TEST) + 1.0);  
             variable RandNum : std_logic_vector(NUMBITS_TEST downto 0); 
             
@@ -144,7 +144,7 @@ begin
 			     if (m = 0) then 
 			         gcdTest(i mod SYSLENGTH) := (others => '0'); 
 			     elsif (n = 0) then 
-			         gcdTest(i mod SYSLENGTH) := aTest(i mod SYSLENGTH); --TODO 
+			         gcdTest(i mod SYSLENGTH) := aTest(i mod SYSLENGTH); 
 			     else 
 			         while (n /= 0) loop 
 			             r := m mod n; 
@@ -154,6 +154,7 @@ begin
 			         gcdTest(i mod SYSLENGTH) := std_logic_vector(to_unsigned(m, NUMBITS_TEST + 1)); 
 			     end if; 
 			     
+				 -- load in next test cases 
 			     a <= aTest(i mod SYSLENGTH); 
 			     b <= bTest(i mod SYSLENGTH); 
 			     wait for CLK_PERIOD;

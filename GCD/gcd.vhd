@@ -34,11 +34,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
+use work.gcdConstants.all;
 
 entity GCDPE1 is
         generic (
-            NumBits : natural := 15; -- number of bits in gcd inputs
-            NumBitsK : natural := 3  -- number of bits in power of 2 counter
+            NumBits : natural := NUMBITS_TEST; -- number of bits in gcd inputs
+            NumBitsK : natural := NUMBITSK_TEST  -- number of bits in power of 2 counter
         );
         port(
             -- inputs 
@@ -112,8 +113,8 @@ use work.gcdConstants.all;
 
 entity GCDPE2 is
         generic (
-            NumBits : natural := 15;-- number of bits in gcd inputs
-            NumBitsK : natural := 3 -- number of bits in power of 2 counter
+            NumBits : natural := NUMBITS_TEST;-- number of bits in gcd inputs
+            NumBitsK : natural := NUMBITSK_TEST -- number of bits in power of 2 counter
         );
         port(
             -- inputs 
@@ -191,8 +192,8 @@ use work.gcdConstants.all;
 
 entity GCDPE3 is
         generic (
-            NumBits : natural := 15;-- number of bits in gcd inputs
-            NumBitsK : natural := 3 -- number of bits in power of 2 counter 
+            NumBits : natural := NUMBITS_TEST;-- number of bits in gcd inputs
+            NumBitsK : natural := NUMBITSK_TEST -- number of bits in power of 2 counter 
         );
         port(
             -- inputs 
@@ -214,62 +215,7 @@ end GCDPE3;
 
 architecture GCDPE3 of GCDPE3 is
     begin
---	process(clk)
---        variable tint : std_logic_vector(NumBits downto 0); -- intermediate t variable
-	   
---        begin
---		if rising_edge(clk) then
---		    -- while t != 0; done if t = 0
---            if (not (unsigned(tin) = 0)) then
---                if (tin(0) = '0') then -- remove factors of 2 from t
---                    tint := '0' & tin(NumBits downto 1); -- shift t to divide by 2
---                else 
---                    tint := tin; 
---                end if;  
-                
---                if (tint(0) = '1') then -- if t is not even, subtract for next outputs 
---                    if (tinS = '0') then -- if t > 0 
---                        aout <= tint;     -- a = t
---                        bout <= bin; 
-                        
---                        -- t = a - b
---                        if (unsigned(tint) >= unsigned(bin)) then 
---                            tout <= tint - bin; -- TODO subtractor
---                            toutS <= '0'; 
---                        else 
---                            tout <= bin - tint; 
---                            toutS <= '1'; -- t is negative 
---                        end if; 
---                    else -- t < 0 
---                        aout <= ain;
---                        bout <= tint;    -- b = -t 
-                        
---                        -- t = a - b
---                        if (unsigned(ain) >= unsigned(tint)) then 
---                            tout <= ain - tint; 
---                            toutS <= '0'; 
---                        else 
---                            tout <= tint - ain; 
---                            toutS <= '1'; 
---                        end if; 
---                    end if; 
---                else 
---                    aout <= ain; -- pass other signals through 
---                    bout <= bin; 
---                    tout <= tint; 
---                    toutS <= tinS;
---                end if;
---            else -- t == 0 
---                aout <= ain; -- done with steins, pass signals through 
---                bout <= bin; 
---                tout <= tin; 
---                toutS <= tinS; 
---            end if;
---            kout <= kin; -- pass k through 
---		end if;
---	end process;
-	
-	process(clk)
+		process(clk)
         variable tint : std_logic_vector(NumBits downto 0); -- intermediate t variable
 	   
         begin
@@ -323,7 +269,6 @@ architecture GCDPE3 of GCDPE3 is
             kout <= kin; -- pass k through 
 		end if;
 	end process;
-	
 end GCDPE3;
 
 ----------------------------------------------------------------------------
@@ -358,11 +303,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_unsigned.all;
+use work.gcdConstants.all;
 
 entity GCDPE4 is
         generic (
-            NumBits : natural := 15; -- number of bits in gcd inputs 
-            NumBitsK : natural := 3 -- number of bits in power of 2 counter
+            NumBits : natural := NUMBITS_TEST; -- number of bits in gcd inputs 
+            NumBitsK : natural := NUMBITSK_TEST -- number of bits in power of 2 counter
         );
         port(
             -- inputs 
@@ -430,9 +376,9 @@ use work.gcdConstants.all;
 
 entity GCDSys is
         generic (
-            NumBits : natural := 15;  -- number of bits in gcd inputs 
-            NumBitsK : natural := 3;  -- number of bits in power of 2 counter
-            NumBitsT : natural := 30  -- number of middle PEs
+            NumBits : natural := NUMBITS_TEST;  -- number of bits in gcd inputs 
+            NumBitsK : natural := NUMBITSK_TEST;  -- number of bits in power of 2 counter
+            NumBitsT : natural := NUMBITST_TEST  -- number of middle PEs
         );
         port(
             Clk   :  in  std_logic; -- system clock
@@ -445,7 +391,7 @@ end GCDSys;
 architecture GCDSys of GCDSys is
     -- internal signals
     type BusArr is array (natural range <>) of std_logic_vector(NumBits downto 0); 
-    signal abus : BusArr(NumBits * 2 + NumBitsT + 4 downto 0); --TODO consts
+    signal abus : BusArr(NumBits * 2 + NumBitsT + 4 downto 0); 
     signal bbus : BusArr(NumBits + NumBitsT + 3 downto 0); 
     signal tbus : BusArr(NumBits + NumBitsT + 3 downto NumBits + 2);
     
@@ -458,8 +404,8 @@ architecture GCDSys of GCDSys is
     -- PE component declarations
     component GCDPE1 is
         generic (
-            NumBits : natural := 15; -- number of bits in gcd inputs
-            NumBitsK : natural := 3  -- number of bits in power of 2 counter
+            NumBits : natural := NUMBITS_TEST; -- number of bits in gcd inputs
+            NumBitsK : natural := NUMBITSK_TEST  -- number of bits in power of 2 counter
         );
         port(
             -- inputs 
@@ -476,8 +422,8 @@ architecture GCDSys of GCDSys is
 
     component GCDPE2 is
         generic (
-            NumBits : natural := 15;-- number of bits in gcd inputs
-            NumBitsK : natural := 3 -- number of bits in power of 2 counter
+            NumBits : natural := NUMBITS_TEST;-- number of bits in gcd inputs
+            NumBitsK : natural := NUMBITSK_TEST -- number of bits in power of 2 counter
         );
         port(
             -- inputs 
@@ -496,8 +442,8 @@ architecture GCDSys of GCDSys is
 
     component GCDPE3 is
         generic (
-            NumBits : natural := 15;-- number of bits in gcd inputs
-            NumBitsK : natural := 3 -- number of bits in power of 2 counter 
+            NumBits : natural := NUMBITS_TEST;-- number of bits in gcd inputs
+            NumBitsK : natural := NUMBITSK_TEST -- number of bits in power of 2 counter 
         );
         port(
             -- inputs 
@@ -519,8 +465,8 @@ architecture GCDSys of GCDSys is
 
     component GCDPE4 is
             generic (
-            NumBits : natural := 15; -- number of bits in gcd inputs 
-            NumBitsK : natural := 3 -- number of bits in power of 2 counter
+            NumBits : natural := NUMBITS_TEST; -- number of bits in gcd inputs 
+            NumBitsK : natural := NUMBITSK_TEST -- number of bits in power of 2 counter
         );
         port(
             -- inputs 
