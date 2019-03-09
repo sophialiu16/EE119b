@@ -69,7 +69,7 @@ unsigned int  GCD(unsigned int a, unsigned int b)
 
     // check lsb for even/odd
     // remove 2^n
-    for (int i = 0; i <= 31; i++){
+    for (int i = 0; i <= 15; i++){
         iter_cnt++;
         if (a%2 ==0 && b%2==0)  {
             k++;
@@ -79,6 +79,7 @@ unsigned int  GCD(unsigned int a, unsigned int b)
     }
 
     // assign t
+
     iter_cnt++;
     if (a%2 == 1) {
         t = -b;
@@ -87,25 +88,51 @@ unsigned int  GCD(unsigned int a, unsigned int b)
     }
 
     // steins
-    for (int i = 0; i <= 45; i++){ //TODO count??
+
+    //for (int i = 0; i <= 30; i++){ //TODO count??
+    while(t != 0){
         iter_cnt++;
         if (t != 0){
             if (t%2 == 0){
                 t /= 2;
             }
-            else{
+            if (t%2 != 0){
+                //iter_cnt++;
                 if (t>0) {
                     a = t;
                 } else {
                     b = -t;
                 }
                 t = a - b;
+                /*
+                if (t%2 ==0){
+                    t /= 2;
+                }*/
             }
         }
     }
 
+    //for (int i = 0; i <= 45; i++){ //TODO count??
+    /*
+    while (b != 0){
+        iter_cnt++;
+        //if (t != 0){
+            if (b%2 == 0){
+                b /= 2;
+            }
+            else{
+                if (a > b){
+                    t = a; // swap a, b
+                    a = b;
+                    b = t;
+                }
+                b = b - a;
+            }
+        //}
+    } */
+
     // put 2 back in
-    for (int i = 0; i <= 31; i++){
+    for (int i = 0; i <= 15; i++){
         iter_cnt++;
         if (k != 0){
             a *= 2;

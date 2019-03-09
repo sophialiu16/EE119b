@@ -1,13 +1,13 @@
 ----------------------------------------------------------------------------------
 --
--- Constants for ALU
+-- Constants for GCD Systolic Array 
 --
--- ALUConstants.vhd
+-- GCDConstants.vhd
 --
--- This file contains constants for the ALU entity and testbench.
+-- This file contains constants for the GCDSys entity and testbench.
 --
 --  Revision History:
---     01/29/19 Sophia Liu initial revision
+--     03/06/19 Sophia Liu initial revision
 --
 ----------------------------------------------------------------------------------
 
@@ -17,12 +17,22 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package gcdConstants is
-    constant CLK_PERIOD : time := 100 ns;
-    constant TEST_SIZE : natural := 1000; 
-    
+    -- number of bits to test 
     constant NUMBITS_TEST : natural := 15; 
-    constant NUMBITST_TEST : natural := 40; --??? 
+    
+    -- number of middle PEs required 
+    constant NUMBITST_TEST : natural := 30; 
 
+    -- number of tests to run 
+    constant TEST_SIZE : natural := 10000; 
+    
+    -- testbench clock period 
+    constant CLK_PERIOD : time := 100 ns;
+    
+    -- constants for sign flag 
+    constant TNEG : std_logic := '1'; 
+    constant TPOS : std_logic := '0'; 
+    
 end package gcdConstants;
 
 
