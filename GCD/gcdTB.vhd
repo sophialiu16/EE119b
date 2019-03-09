@@ -98,17 +98,27 @@ begin
             bTest(1 downto 0) := ((others => '0'), (others => '1')); 
             gcdTest(1 downto 0) := ((others => '0'), (others => '1')); 
             
---            aTest(2) := 
---            bTest(2) := 
---            gcdTest(2) := 
-            for i in 0 to 1 loop 
+            aTest(2) := (0 => '0', others => '1'); 
+            bTest(2) := (others => '1');
+            gcdTest(2) := (0 => '1', others => '0'); 
+            
+            aTest(3) := (NUMBITS_TEST => '1', others => '0'); 
+            bTest(3) := (NUMBITS_TEST => '1', others => '0');
+            gcdTest(3) := (NUMBITS_TEST => '1', others => '0'); 
+            
+            aTest(4) := (NUMBITS_TEST => '1', others => '0'); 
+            bTest(4) := (NUMBITS_TEST => '1', (NUMBITS_TEST - 1) => '1', others => '0');
+            gcdTest(4) := ((NUMBITS_TEST - 1) => '1', others => '0'); 
+            -- load in edge cases 
+            for i in 0 to 4 loop 
                  a <= aTest(i); 
 			     b <= bTest(i); 
 			     wait for CLK_PERIOD;
 			end loop; 
 			
-            -- can now start checking results 
-            for i in 2 to TEST_SIZE loop 
+            -- randomized testing 
+            for i in 5 to TEST_SIZE loop 
+                -- can check gcd results once array is fully loaded 
                 if(i >= SYSLENGTH) then 
 			     assert (gcdTest(i mod SYSLENGTH) = gcd)
 			         report  "GCD failure; a : " & integer'image(to_integer(unsigned(aTest(i mod SYSLENGTH)))) 

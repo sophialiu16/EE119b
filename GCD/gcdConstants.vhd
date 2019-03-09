@@ -22,17 +22,17 @@ package gcdConstants is
     constant NBITS_K : natural := 4; -- NBITS_K = log2(NBITS) 
     
     -- constants based on nbits 
-    constant NUMBITS_TEST : natural := NBITS - 1;   --15; 
-    constant NUMBITSK_TEST : natural := NBITS_K - 1;     --3; 
+    constant NUMBITS_TEST : natural := NBITS - 1;   
+    constant NUMBITSK_TEST : natural := NBITS_K - 1;     
     -- number of middle PEs required 
-    constant NUMBITST_TEST : natural := NBITS * 2; --30; 
+    constant NUMBITST_TEST : natural := NUMBITS_TEST * 2;  
 
     -- length of array 
     constant SYSLENGTH : natural := NUMBITS_TEST * 2 + NUMBITST_TEST + 4; 
     
     
     -- number of tests to run 
-    constant TEST_SIZE : natural := 10000; 
+    constant TEST_SIZE : natural := 1000000; 
     
     -- testbench clock period 
     constant CLK_PERIOD : time := 100 ns;
