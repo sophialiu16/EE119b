@@ -17,12 +17,20 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 package gcdConstants is
-    -- number of bits to test 
-    constant NUMBITS_TEST : natural := 15; 
+    -- number of bits to test (change for testbench) 
+    constant NBITS : natural := 16; 
+    constant NBITS_K : natural := 4; -- NBITS_K = log2(NBITS) 
     
+    -- constants based on nbits 
+    constant NUMBITS_TEST : natural := NBITS - 1;   --15; 
+    constant NUMBITSK_TEST : natural := NBITS_K - 1;     --3; 
     -- number of middle PEs required 
-    constant NUMBITST_TEST : natural := 30; 
+    constant NUMBITST_TEST : natural := NBITS * 2; --30; 
 
+    -- length of array 
+    constant SYSLENGTH : natural := NUMBITS_TEST * 2 + NUMBITST_TEST + 4; 
+    
+    
     -- number of tests to run 
     constant TEST_SIZE : natural := 10000; 
     

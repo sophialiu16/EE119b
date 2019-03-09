@@ -214,6 +214,61 @@ end GCDPE3;
 
 architecture GCDPE3 of GCDPE3 is
     begin
+--	process(clk)
+--        variable tint : std_logic_vector(NumBits downto 0); -- intermediate t variable
+	   
+--        begin
+--		if rising_edge(clk) then
+--		    -- while t != 0; done if t = 0
+--            if (not (unsigned(tin) = 0)) then
+--                if (tin(0) = '0') then -- remove factors of 2 from t
+--                    tint := '0' & tin(NumBits downto 1); -- shift t to divide by 2
+--                else 
+--                    tint := tin; 
+--                end if;  
+                
+--                if (tint(0) = '1') then -- if t is not even, subtract for next outputs 
+--                    if (tinS = '0') then -- if t > 0 
+--                        aout <= tint;     -- a = t
+--                        bout <= bin; 
+                        
+--                        -- t = a - b
+--                        if (unsigned(tint) >= unsigned(bin)) then 
+--                            tout <= tint - bin; -- TODO subtractor
+--                            toutS <= '0'; 
+--                        else 
+--                            tout <= bin - tint; 
+--                            toutS <= '1'; -- t is negative 
+--                        end if; 
+--                    else -- t < 0 
+--                        aout <= ain;
+--                        bout <= tint;    -- b = -t 
+                        
+--                        -- t = a - b
+--                        if (unsigned(ain) >= unsigned(tint)) then 
+--                            tout <= ain - tint; 
+--                            toutS <= '0'; 
+--                        else 
+--                            tout <= tint - ain; 
+--                            toutS <= '1'; 
+--                        end if; 
+--                    end if; 
+--                else 
+--                    aout <= ain; -- pass other signals through 
+--                    bout <= bin; 
+--                    tout <= tint; 
+--                    toutS <= tinS;
+--                end if;
+--            else -- t == 0 
+--                aout <= ain; -- done with steins, pass signals through 
+--                bout <= bin; 
+--                tout <= tin; 
+--                toutS <= tinS; 
+--            end if;
+--            kout <= kin; -- pass k through 
+--		end if;
+--	end process;
+	
 	process(clk)
         variable tint : std_logic_vector(NumBits downto 0); -- intermediate t variable
 	   
@@ -268,6 +323,7 @@ architecture GCDPE3 of GCDPE3 is
             kout <= kin; -- pass k through 
 		end if;
 	end process;
+	
 end GCDPE3;
 
 ----------------------------------------------------------------------------

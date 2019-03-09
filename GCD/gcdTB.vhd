@@ -1,21 +1,16 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
 -- 
--- Create Date: 03/07/2019 09:48:28 PM
--- Design Name: 
--- Module Name: gcdTB - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
+-- Test Bench for GCD Systolic Array 
 -- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
+-- Test Bench for GCDSys entity. Generates random numbers of size NBITS 
+-- from the gcdConstants package. 
+-- The array is first loaded with test cases, including several edge cases. 
+-- Random cases are then generated, and the gcd output is checked every clock. 
+--
+--  Revision History:
+--     03/06/19 Sophia Liu initial revision
+--     03/08/19 Sophia Liu updated comments
+--
 ----------------------------------------------------------------------------------
 
 
@@ -33,14 +28,15 @@ architecture TB_ARCH of gcdTB is
     -- test component
     component GCDSys is
         generic (
-            NumBits : natural := 31;
-            NumBitsT : natural := 45
+            NumBits : natural := 15;  -- number of bits in gcd inputs 
+            NumBitsK : natural := 3;  -- number of bits in power of 2 counter
+            NumBitsT : natural := 30  -- number of middle PEs
         );
         port(
             Clk   :  in  std_logic; -- system clock
-            a     :  in  std_logic_vector(NumBits downto 0);
-            b     :  in  std_logic_vector(NumBits downto 0);
-            gcd   :  out std_logic_vector(NumBits downto 0)
+            a     :  in  std_logic_vector(NumBits downto 0); -- gcd input a
+            b     :  in  std_logic_vector(NumBits downto 0); -- gcd input b
+            gcd   :  out std_logic_vector(NumBits downto 0) -- gcd of a and b
         );
     end component;
 
@@ -53,19 +49,18 @@ architecture TB_ARCH of gcdTB is
     signal b : std_logic_vector(NUMBITS_TEST downto 0);
     signal gcd : std_logic_vector(NUMBITS_TEST downto 0);
     
-    -- test signals 
-    signal aTest : std_logic_vector(NUMBITS_TEST downto 0);
-    signal bTest : std_logic_vector(NUMBITS_TEST downto 0);
-    signal gcdTest : std_logic_vector(NUMBITS_TEST downto 0);
+    -- test signal type 
+    type arrTest is array (SYSLENGTH downto 0) of std_logic_vector(NUMBITS_TEST downto 0); 
 begin
 
     UUT : GCDSYS 
         generic map(
             NumBits => NUMBITS_TEST,
+            NumBitsK => NUMBITSK_TEST,
             NumBitsT => NUMBITST_TEST
         )
         port map(
-            Clk   => Clk,
+            clk   => clk,
             a     => a, 
             b     => b, 
             gcd   => gcd
@@ -82,9 +77,9 @@ begin
             variable RandNum : std_logic_vector(NUMBITS_TEST downto 0); 
             
             -- test a, b, gcd
-            variable aTest : std_logic_vector(NUMBITS_TEST downto 0);
-            variable bTest : std_logic_vector(NUMBITS_TEST downto 0);
-            variable gcdTest : std_logic_vector(NUMBITS_TEST downto 0);
+            variable aTest : arrTest;
+            variable bTest : arrTest;
+            variable gcdTest : arrTest;
             
             -- for calculating correct gcd
             variable r : integer; 
@@ -98,49 +93,62 @@ begin
             wait for CLK_PERIOD * 10; 
             
             -- begin testing 
-            for i in 0 to TEST_SIZE loop 
-                -- generate random a, b
+            -- add some edge cases 
+            aTest(1 downto 0) := ((others => '0'), (others => '1')); 
+            bTest(1 downto 0) := ((others => '0'), (others => '1')); 
+            gcdTest(1 downto 0) := ((others => '0'), (others => '1')); 
+            
+--            aTest(2) := 
+--            bTest(2) := 
+--            gcdTest(2) := 
+            for i in 0 to 1 loop 
+                 a <= aTest(i); 
+			     b <= bTest(i); 
+			     wait for CLK_PERIOD;
+			end loop; 
+			
+            -- can now start checking results 
+            for i in 2 to TEST_SIZE loop 
+                if(i >= SYSLENGTH) then 
+			     assert (gcdTest(i mod SYSLENGTH) = gcd)
+			         report  "GCD failure; a : " & integer'image(to_integer(unsigned(aTest(i mod SYSLENGTH)))) 
+			         & "     b : "  &  integer'image(to_integer(unsigned(bTest(i mod SYSLENGTH)))) 
+			         & "     correct GCD : " & integer'image(to_integer(unsigned(gcdTest(i mod SYSLENGTH)))) 
+			         & "     test GCD : " & integer'image(to_integer(unsigned(gcd))) 
+			         & "     test no : " & integer'image(i)
+			         
+			         severity  ERROR;
+                end if; 
+                -- generate next random a, b
 			     uniform(Seed1, Seed2, Rand); 
 			     RandNum := std_logic_vector(to_unsigned(integer(trunc(Rand * RandRange)), RandNum'length)); 
-			     aTest := RandNum; 
-			     wait for CLK_PERIOD; 
+			     aTest(i mod SYSLENGTH) := RandNum; 
 			     
 			     uniform(Seed1, Seed2, Rand); 
 			     RandNum := std_logic_vector(to_unsigned(integer(trunc(Rand * RandRange)), RandNum'length)); 
-			     bTest := RandNum;
-			     wait for CLK_PERIOD;
+			     bTest(i mod SYSLENGTH) := RandNum;
 			     
 			     -- calculate test gcd result 
-			     m := to_integer(unsigned(aTest)); 
-			     n := to_integer(unsigned(bTest)); 
+			     m := to_integer(unsigned(aTest(i mod SYSLENGTH))); 
+			     n := to_integer(unsigned(bTest(i mod SYSLENGTH))); 
 			     if (m = 0) then 
-			         gcdTest := (others => '0'); 
+			         gcdTest(i mod SYSLENGTH) := (others => '0'); 
 			     elsif (n = 0) then 
-			         gcdTest := aTest; --TODO 
+			         gcdTest(i mod SYSLENGTH) := aTest(i mod SYSLENGTH); --TODO 
 			     else 
 			         while (n /= 0) loop 
 			             r := m mod n; 
 			             m := n; 
 			             n := r; 
 			         end loop; 
-			         gcdTest := std_logic_vector(to_unsigned(m, gcdTest'length)); 
+			         gcdTest(i mod SYSLENGTH) := std_logic_vector(to_unsigned(m, NUMBITS_TEST + 1)); 
 			     end if; 
 			     
-			     a <= aTest; 
-			     b <= bTest; 
-			     wait for CLK_PERIOD * (NUMBITS_TEST * 2 + NUMBITST_TEST + 4); -- pipeline TODO 
-			     
-			     -- check array output 
-			     assert (gcdTest = gcd)
-			         report  "GCD failure; a : " & integer'image(to_integer(unsigned(aTest))) 
-			         & "     b : "  &  integer'image(to_integer(unsigned(bTest))) 
-			         & "     correct GCD : " & integer'image(to_integer(unsigned(gcdTest))) 
-			         & "     test GCD : " & integer'image(to_integer(unsigned(gcd))) 
-			         & "     test no : " & integer'image(TEST_SIZE-i)
-			         
-			         severity  ERROR;
-    			    
+			     a <= aTest(i mod SYSLENGTH); 
+			     b <= bTest(i mod SYSLENGTH); 
+			     wait for CLK_PERIOD;
             end loop; 
+            
             END_SIM <= true; 
             wait; 
         end process; 

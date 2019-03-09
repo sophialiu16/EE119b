@@ -89,8 +89,8 @@ unsigned int  GCD(unsigned int a, unsigned int b)
 
     // steins
 
-    //for (int i = 0; i <= 30; i++){ //TODO count??
-    while(t != 0){
+    for (int i = 0; i <= 29; i++){ //TODO count??
+    //while(t != 0){
         iter_cnt++;
         if (t != 0){
             if (t%2 == 0){
