@@ -40,6 +40,7 @@ end Cell;
 
 architecture CellArch of Cell is
     signal Self : std_logic;
+    signal TEMP : std_logic; 
     signal NeighborCount : integer;
     begin
 
@@ -59,6 +60,8 @@ architecture CellArch of Cell is
                     else 
                         Self <= Self;
                     end if;
+                else 
+                    Self <= Self; 
                 end if;
             end if;
             CellDataOut <= Self;
@@ -77,6 +80,8 @@ end CellArch;
 -- Cell mesh for Conway's game of life, cellular atomaton
 --
 -- Description
+--
+-- must be at least 3x3 
 --
 -- Generic:
 --
@@ -118,49 +123,49 @@ architecture CellMeshArch of CellMesh is
             CellDataOut : out std_logic
         );
     end component;
-
-    signal CurNeighbors : std_logic_vector(NSIZE downto 0);  -- intermediate datain signal
+    type NeighborBus is array((ROWSIZE * COLSIZE - 1) downto 0) of std_logic_vector(NSIZE downto 0); 
+    signal CurNeighbors : NeighborBus;  -- intermediate neighbor signals
     signal CellData : std_logic_vector((ROWSIZE * COLSIZE - 1) downto 0);
-    signal CurDataIn : std_logic;
+    signal CurDataIn : std_logic_vector(ROWSIZE * COLSIZE - 1 downto 0);
     begin
 
-        -- rowsize x rowsize mesh of cells
+        -- rowsize x colsize mesh of cells 
         rowGen: for r in 0 to ROWSIZE-1 generate
             colGen : for c in 0 to COLSIZE-1 generate
                 -- current cell is number r * ROWSIZE + c
                 -- TODO comparison size
-                CurNeighbors(0) <= '0' when (r-1) < 0 or (c-1) < 0 else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(0) <= '0' when (r-1) < 0 or (c-1) < 0 else -- edge case
                                     CellData((r-1)*ROWSIZE + (c-1));
 
-                CurNeighbors(1) <= '0' when (r-1) < 0 else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(1) <= '0' when (r-1) < 0 else -- edge case
                                     CellData((r-1)*ROWSIZE + c);
 
-                CurNeighbors(2) <= '0' when (r-1) < 0 or (c+1) >= COLSIZE else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(2) <= '0' when (r-1) < 0 or (c+1) >= COLSIZE else -- edge case
                                     CellData((r-1)*ROWSIZE + (c+1));
 
-                CurNeighbors(3) <= '0' when (c-1) < 0 else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(3) <= '0' when (c-1) < 0 else -- edge case
                                     CellData((r)*ROWSIZE + (c-1));
             
-                CurNeighbors(4) <= '0' when (c+1) >= COLSIZE else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(4) <= '0' when (c+1) >= COLSIZE else -- edge case
                                     CellData(r*ROWSIZE + (c+1));
 
-                CurNeighbors(5) <= '0' when (r+1) >= ROWSIZE or (c-1) < 0 else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(5) <= '0' when (r+1) >= ROWSIZE or (c-1) < 0 else -- edge case
                                     CellData((r+1)*ROWSIZE + (c-1));
 
-                CurNeighbors(6) <= '0' when (r+1) >= ROWSIZE  else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(6) <= '0' when (r+1) >= ROWSIZE  else -- edge case
                                     CellData((r+1)*ROWSIZE + c);
 
-                CurNeighbors(7) <= '0' when (r+1) >= ROWSIZE or (c+1) >= COLSIZE else -- edge case
+                CurNeighbors(r*ROWSIZE + c)(7) <= '0' when (r+1) >= ROWSIZE or (c+1) >= COLSIZE else -- edge case
                                     CellData((r+1)*ROWSIZE + (c+1));
                                     
-                CurDataIn <=  DataIn when r + c = 0 else  
+                CurDataIn(r*ROWSIZE + c) <=  DataIn when r + c = 0 else  
                                 CellData(r * ROWSIZE + c - 1); 
                 Celli : Cell
                 port map (
                     Clk         => Clk,
-                    Neighbors   => CurNeighbors,
+                    Neighbors   => CurNeighbors(r*ROWSIZE + c),
                     Shift       => Shift,
-                    CellDataIn      => CurDataIn,
+                    CellDataIn      => CurDataIn(r*ROWSIZE + c),
                     NextTimeTick    => NextTimeTick,
                     CellDataOut     => CellData(r*ROWSIZE + c)
                 );
