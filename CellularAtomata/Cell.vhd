@@ -40,7 +40,6 @@ end Cell;
 
 architecture CellArch of Cell is
     signal Self : std_logic;
-    signal TEMP : std_logic; 
     signal NeighborCount : integer;
     begin
 
@@ -52,26 +51,22 @@ architecture CellArch of Cell is
                     Self <= CellDataIn;
                 elsif NextTimeTick = '1' then
                     -- otherwise calculate self status based on neighbors
-                    -- add neighbors together (TODO blocks of 4 bits)
                     if NeighborCount = 3 then
                         Self <= '1';
                     elsif NeighborCount /=2 then
                         Self <= '0';
-                    else 
+                    else
                         Self <= Self;
                     end if;
-                else 
-                    Self <= Self; 
+                else
+                    Self <= Self;
                 end if;
             end if;
             CellDataOut <= Self;
         end process;
 
         -- TODO
-        NeighborCount <= to_integer(unsigned(Neighbors));--(0)) + unsigned(Neighbors(1))-- +
---                                    unsigned(Neighbors(2)) + unsigned(Neighbors(3)) +
---                                    unsigned(Neighbors(4)) + unsigned(Neighbors(5)) +
---                                    unsigned(Neighbors(6)) + unsigned(Neighbors(7)));
+        NeighborCount <= sum(Neighbors(3 downto 0)) + sum(Neighbors(7 downto 4));
 
 end CellArch;
 
@@ -81,7 +76,7 @@ end CellArch;
 --
 -- Description
 --
--- must be at least 3x3 
+-- must be at least 3x3
 --
 -- Generic:
 --
@@ -102,6 +97,10 @@ use ieee.std_logic_unsigned.all;
 use work.CellConstants.all;
 
 entity CellMesh is
+    generic(
+        RowSize : natural := 3;
+        ColSize : natural := 3
+    );
     port(
         Clk     : in std_logic;     -- system clock
         Shift   : in std_logic;     -- active to shift data in and out
@@ -123,13 +122,13 @@ architecture CellMeshArch of CellMesh is
             CellDataOut : out std_logic
         );
     end component;
-    type NeighborBus is array((ROWSIZE * COLSIZE - 1) downto 0) of std_logic_vector(NSIZE downto 0); 
+    type NeighborBus is array((ROWSIZE * COLSIZE - 1) downto 0) of std_logic_vector(NSIZE downto 0);
     signal CurNeighbors : NeighborBus;  -- intermediate neighbor signals
     signal CellData : std_logic_vector((ROWSIZE * COLSIZE - 1) downto 0);
     signal CurDataIn : std_logic_vector(ROWSIZE * COLSIZE - 1 downto 0);
     begin
 
-        -- rowsize x colsize mesh of cells 
+        -- rowsize x colsize mesh of cells
         rowGen: for r in 0 to ROWSIZE-1 generate
             colGen : for c in 0 to COLSIZE-1 generate
                 -- current cell is number r * ROWSIZE + c
@@ -145,7 +144,7 @@ architecture CellMeshArch of CellMesh is
 
                 CurNeighbors(r*ROWSIZE + c)(3) <= '0' when (c-1) < 0 else -- edge case
                                     CellData((r)*ROWSIZE + (c-1));
-            
+
                 CurNeighbors(r*ROWSIZE + c)(4) <= '0' when (c+1) >= COLSIZE else -- edge case
                                     CellData(r*ROWSIZE + (c+1));
 
@@ -157,9 +156,9 @@ architecture CellMeshArch of CellMesh is
 
                 CurNeighbors(r*ROWSIZE + c)(7) <= '0' when (r+1) >= ROWSIZE or (c+1) >= COLSIZE else -- edge case
                                     CellData((r+1)*ROWSIZE + (c+1));
-                                    
-                CurDataIn(r*ROWSIZE + c) <=  DataIn when r + c = 0 else  
-                                CellData(r * ROWSIZE + c - 1); 
+
+                CurDataIn(r*ROWSIZE + c) <=  DataIn when r + c = 0 else
+                                CellData(r * ROWSIZE + c - 1);
                 Celli : Cell
                 port map (
                     Clk         => Clk,
