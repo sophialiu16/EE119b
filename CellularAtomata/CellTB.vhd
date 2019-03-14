@@ -84,37 +84,70 @@ begin
             NextTimeTick <= '0';
             wait for CLK_PERIOD * 10;
 
-            -- 3x3 testing 
-            for i in 0 to 1023 loop
-                -- shift in data 
-                Shift <= '1'; 
-                for j in 0 to 8 loop 
-                    DataIn <= InitialState33(i)(j); 
-                    wait for CLK_PERIOD; 
-                end loop; 
-                Shift <= '0'; 
-                
+            -- 3x3 testing
+            -- 1 cycle
+            for i in 0 to 511 loop
+                -- shift in data
+                Shift <= '1';
+                for j in 0 to 8 loop
+                    DataIn <= InitialState33(i)(j);
+                    wait for CLK_PERIOD;
+                end loop;
+                Shift <= '0';
+
                 -- wait for one cycle
-                NextTimeTick <= '1';  
-                wait for CLK_PERIOD; 
-                NextTimeTick <= '0'; 
-                
+                NextTimeTick <= '1';
+                wait for CLK_PERIOD;
+                NextTimeTick <= '0';
+
                 -- shift out data and check
-                DataIn <= '0'; -- shift in something 
-                Shift <= '1'; 
-                wait for CLK_PERIOD; --? 
-                for j in 0 to 8 loop 
-                    DataOutTest33(j) := DataOut; 
-                    wait for CLK_PERIOD; 
-                end loop; 
-                    
+                DataIn <= '0'; -- shift in something
+                Shift <= '1';
+                wait for CLK_PERIOD; --?
+                for j in 0 to 8 loop
+                    DataOutTest33(j) := DataOut;
+                    wait for CLK_PERIOD;
+                end loop;
+
 			    assert (DataOutTest33 = Cycle133(i))
 			         report  "Cycle 1 failure; Initial : " & integer'image(to_integer(unsigned(InitialState33(i))))
 			         & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest33)))
 			         & "     Correct : " & integer'image(to_integer(unsigned(Cycle133(i))))
-
+                     & "     Test Number : " & integer'image(i)
 			         severity  ERROR;
+            end loop;
 
+            -- 3x3 testing
+            -- 10 cycles
+            for i in 0 to 511 loop
+                -- shift in data
+                Shift <= '1';
+                for j in 0 to 8 loop
+                    DataIn <= InitialState33(i)(j);
+                    wait for CLK_PERIOD;
+                end loop;
+                Shift <= '0';
+
+                -- wait for ten cycles
+                NextTimeTick <= '1';
+                wait for CLK_PERIOD*10;
+                NextTimeTick <= '0';
+
+                -- shift out data and check
+                DataIn <= '0'; -- shift in something
+                Shift <= '1';
+                wait for CLK_PERIOD; --?
+                for j in 0 to 8 loop
+                    DataOutTest33(j) := DataOut;
+                    wait for CLK_PERIOD;
+                end loop;
+
+			    assert (DataOutTest33 = Cycle1033(i))
+			         report  "Cycle 10 failure; Initial : " & integer'image(to_integer(unsigned(InitialState33(i))))
+			         & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest33)))
+			         & "     Correct : " & integer'image(to_integer(unsigned(Cycle133(i))))
+                     & "     Test Number : " & integer'image(i)
+			         severity  ERROR;
             end loop;
 
             END_SIM <= true;
