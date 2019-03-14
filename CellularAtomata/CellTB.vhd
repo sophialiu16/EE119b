@@ -1,15 +1,15 @@
 ----------------------------------------------------------------------------------
 --
--- Test Bench for GCD Systolic Array
+-- Test Bench for Cell Mesh
 --
--- Test Bench for GCDSys entity. Generates random numbers of size NBITS
--- from the gcdConstants package.
--- The array is first loaded with test cases, including several edge cases.
--- Random cases are then generated, and the gcd output is checked every clock.
+-- Test Bench for CellMesh entity. Tests several different sized meshes, using
+-- all possible 3x3 cases and random cases for 7x7 and 6x9 meshes. 
+-- The test data is shifted in, the cells are left for a number of cycles,
+-- and the test data is shifted out and checked.
 --
 --  Revision History:
---     03/06/19 Sophia Liu initial revision
---     03/08/19 Sophia Liu updated comments
+--     03/13/19 Sophia Liu initial revision
+--     03/14/19 Sophia Liu updated comments
 --
 ----------------------------------------------------------------------------------
 
@@ -29,14 +29,14 @@ architecture TB_ARCH of CellTB is
     -- test component
     component CellMesh is
         generic(
-            RowSize : natural := 3;
-            ColSize : natural := 3
+            RowSize : natural := 3; -- number of rows in mesh
+            ColSize : natural := 3  -- number of columns in mesh
         );
         port(
             Clk     : in std_logic;     -- system clock
-            Shift   : in std_logic;     -- active to shift data in and out
-            DataIn  : in std_logic;     -- data to shift in
-            NextTimeTick    : in std_logic;
+            Shift   : in std_logic;     -- control signal to shift data in and out
+            DataIn  : in std_logic;     -- data to shift in serially
+            NextTimeTick    : in std_logic;     -- control signal to enable cell change
             DataOut : out std_logic     -- serial data output from cells
         );
     end component;
@@ -129,12 +129,12 @@ begin
                 -- shift out data and check
                 DataIn <= '0'; -- shift in something
                 Shift <= '1';
-                wait for CLK_PERIOD; --?
+                wait for CLK_PERIOD;
                 for j in 0 to 8 loop
                     DataOutTest33(j) := DataOut;
                     wait for CLK_PERIOD;
                 end loop;
-
+                -- check output data
 			    assert (DataOutTest33 = Cycle133(i))
 			         report  "Cycle 1 failure; Initial : " & integer'image(to_integer(unsigned(InitialState33(i))))
 			         & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest33)))
@@ -154,7 +154,7 @@ begin
                 end loop;
                 Shift <= '0';
 
-                -- wait for ten cycles
+                -- wait for 10 cycles
                 NextTimeTick <= '1';
                 wait for CLK_PERIOD*10;
                 NextTimeTick <= '0';
@@ -162,12 +162,12 @@ begin
                 -- shift out data and check
                 DataIn <= '0'; -- shift in something
                 Shift <= '1';
-                wait for CLK_PERIOD; --?
+                wait for CLK_PERIOD;
                 for j in 0 to 8 loop
                     DataOutTest33(j) := DataOut;
                     wait for CLK_PERIOD;
                 end loop;
-
+                -- check output data
 			    assert (DataOutTest33 = Cycle1033(i))
 			         report  "Cycle 10 failure; Initial : " & integer'image(to_integer(unsigned(InitialState33(i))))
 			         & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest33)))
@@ -187,7 +187,7 @@ begin
                 end loop;
                 Shift <= '0';
 
-                -- wait for five cycles
+                -- wait for 5 cycles
                 NextTimeTick <= '1';
                 wait for CLK_PERIOD*5;
                 NextTimeTick <= '0';
@@ -200,7 +200,7 @@ begin
                     DataOutTest77(j) := DataOut7;
                     wait for CLK_PERIOD;
                 end loop;
-
+                -- check output data
                 assert (DataOutTest77 = TestCycle577(i*2 + 1))
                      report  "Mesh 7x7 failure; Initial : " & integer'image(to_integer(unsigned(TestCycle577(i*2))))
                      & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest77)))
@@ -220,7 +220,7 @@ begin
                 end loop;
                 Shift <= '0';
 
-                -- wait for five cycles
+                -- wait for 5 cycles
                 NextTimeTick <= '1';
                 wait for CLK_PERIOD*5;
                 NextTimeTick <= '0';
@@ -233,7 +233,7 @@ begin
                     DataOutTest69(j) := DataOut69;
                     wait for CLK_PERIOD;
                 end loop;
-
+                -- check output data
                 assert (DataOutTest69 = TestCycle569(i*2 + 1))
                      report  "Mesh 6x9 failure; Initial : " & integer'image(to_integer(unsigned(TestCycle569(i*2))))
                      & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest69)))
