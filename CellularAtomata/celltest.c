@@ -17,7 +17,8 @@
 #include  <stdlib.h>
 #include <math.h>
 #include <string.h>
-
+#include <time.h>
+#include <stdint.h>
 /* local include files */
 #include  "celltest.h"
 
@@ -34,11 +35,87 @@ int  main(int narg, char *args[])
     long int      error_cnt = 0;    /* number of errors */
     long int      i;		    /* general loop index */
 
-    int rowsize = 3;
-    int colsize = 3;
+    int rowsize = 6;
+    int colsize = 9;
 
-    int state[9];
-    int nextState[9];
+    int state[rowsize * colsize];
+    int nextState[rowsize * colsize];
+
+    int64_t initial;
+
+    // test 7x7
+    // some random initial states
+    // generate states after n cell cycles
+    srand(time(0)); // seed random numbers
+    for (i = 0; i <= 20; i++){
+        initial = rand() * rand() * rand(); // about 2^45
+        //initial = pow(2, 49) - 1;
+        printf("\"");
+        for (int c = rowsize*colsize-1; c >= 0; c--) // generate initial state
+          {
+            k = initial >> c;
+
+            if (k & 1){
+              state[rowsize*colsize - 1 - c] = 1;
+            } else {
+              state[rowsize*colsize - 1 - c] = 0;
+            }
+            printf("%d", state[rowsize*colsize - 1 - c]);
+          }
+          printf("\",");
+
+          for (int n = 0; n < 5; n++){ // test for 5 cycles
+              for (int r = 0; r < rowsize; r++){
+                  for (int c = 0; c < colsize; c++){
+                      int neighborCount = 0;
+                      if((r != 0) && (c !=0)) {
+                          neighborCount += state[(r-1)*colsize + c-1];
+                      }
+                      if(r != 0){
+                          neighborCount += state[(r-1)*colsize + c];
+                      }
+                      if(r != 0 && c != (colsize - 1)){
+                          neighborCount += state[(r-1)*colsize + c+1];
+                      }
+                      if(c != 0){
+                          neighborCount += state[(r)*colsize + c-1];
+                      }
+                      if(c != (colsize - 1)){
+                          neighborCount += state[(r)*colsize + c+1];
+                      }
+                      if(r != (rowsize - 1) && c !=0) {
+                          neighborCount += state[(r+1)*colsize + c-1];
+                      }
+                      if(r != (rowsize - 1)){
+                          neighborCount += state[(r+1)*colsize + c];
+                      }
+                      if(r != (rowsize - 1) && c != (colsize - 1)){
+                          neighborCount += state[(r+1)*colsize + c+1];
+                      }
+
+                      if (neighborCount == 3){
+                          nextState[r*colsize + c] = 1;
+                      } else if (neighborCount == 2){
+                          nextState[r*colsize + c] = state[r * colsize + c];
+                      } else {
+                          nextState[r*colsize + c] = 0;
+                      }
+                  }
+              }
+              for(int n = 0; n < rowsize * colsize; n++){
+                  state[n] = nextState[n];
+              }
+          }
+          printf("\"");
+          for(int n = 0; n < rowsize * colsize; n++){
+              printf("%d", state[n]);
+          }
+          printf("\",\n");
+
+    }
+
+
+/*
     // generate and print all possible initial dead/alive states (integers 0 to 2^n-1)
     for (i = 0; i <= pow(2, rowsize * colsize + 1)-1; i++){
         printf("\"");
@@ -197,7 +274,7 @@ int  main(int narg, char *args[])
           if (i%5 == 0){
               printf("\n");
           }
-    }
+    } */
         return  GOOD_EXIT;
 
 }

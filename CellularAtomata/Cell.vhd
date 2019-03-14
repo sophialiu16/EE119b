@@ -131,42 +131,42 @@ architecture CellMeshArch of CellMesh is
         -- rowsize x colsize mesh of cells
         rowGen: for r in 0 to ROWSIZE-1 generate
             colGen : for c in 0 to COLSIZE-1 generate
-                -- current cell is number r * ROWSIZE + c
+                -- current cell is number r * COLSIZE + c
                 -- TODO comparison size
-                CurNeighbors(r*ROWSIZE + c)(0) <= '0' when (r-1) < 0 or (c-1) < 0 else -- edge case
-                                    CellData((r-1)*ROWSIZE + (c-1));
+                CurNeighbors(r*COLSIZE + c)(0) <= '0' when (r-1) < 0 or (c-1) < 0 else -- edge case
+                                    CellData((r-1)*COLSIZE + (c-1));
 
-                CurNeighbors(r*ROWSIZE + c)(1) <= '0' when (r-1) < 0 else -- edge case
-                                    CellData((r-1)*ROWSIZE + c);
+                CurNeighbors(r*COLSIZE + c)(1) <= '0' when (r-1) < 0 else -- edge case
+                                    CellData((r-1)*COLSIZE + c);
 
-                CurNeighbors(r*ROWSIZE + c)(2) <= '0' when (r-1) < 0 or (c+1) >= COLSIZE else -- edge case
-                                    CellData((r-1)*ROWSIZE + (c+1));
+                CurNeighbors(r*COLSIZE + c)(2) <= '0' when (r-1) < 0 or (c+1) >= COLSIZE else -- edge case
+                                    CellData((r-1)*COLSIZE + (c+1));
 
-                CurNeighbors(r*ROWSIZE + c)(3) <= '0' when (c-1) < 0 else -- edge case
-                                    CellData((r)*ROWSIZE + (c-1));
+                CurNeighbors(r*COLSIZE + c)(3) <= '0' when (c-1) < 0 else -- edge case
+                                    CellData((r)*COLSIZE + (c-1));
 
-                CurNeighbors(r*ROWSIZE + c)(4) <= '0' when (c+1) >= COLSIZE else -- edge case
-                                    CellData(r*ROWSIZE + (c+1));
+                CurNeighbors(r*COLSIZE + c)(4) <= '0' when (c+1) >= COLSIZE else -- edge case
+                                    CellData(r*COLSIZE + (c+1));
 
-                CurNeighbors(r*ROWSIZE + c)(5) <= '0' when (r+1) >= ROWSIZE or (c-1) < 0 else -- edge case
-                                    CellData((r+1)*ROWSIZE + (c-1));
+                CurNeighbors(r*COLSIZE + c)(5) <= '0' when (r+1) >= ROWSIZE or (c-1) < 0 else -- edge case
+                                    CellData((r+1)*COLSIZE + (c-1));
 
-                CurNeighbors(r*ROWSIZE + c)(6) <= '0' when (r+1) >= ROWSIZE  else -- edge case
-                                    CellData((r+1)*ROWSIZE + c);
+                CurNeighbors(r*COLSIZE + c)(6) <= '0' when (r+1) >= ROWSIZE  else -- edge case
+                                    CellData((r+1)*COLSIZE + c);
 
-                CurNeighbors(r*ROWSIZE + c)(7) <= '0' when (r+1) >= ROWSIZE or (c+1) >= COLSIZE else -- edge case
-                                    CellData((r+1)*ROWSIZE + (c+1));
+                CurNeighbors(r*COLSIZE + c)(7) <= '0' when (r+1) >= ROWSIZE or (c+1) >= COLSIZE else -- edge case
+                                    CellData((r+1)*COLSIZE + (c+1));
 
-                CurDataIn(r*ROWSIZE + c) <=  DataIn when r + c = 0 else
-                                CellData(r * ROWSIZE + c - 1);
+                CurDataIn(r*COLSIZE + c) <=  DataIn when r + c = 0 else
+                                CellData(r * COLSIZE + c - 1);
                 Celli : Cell
                 port map (
                     Clk         => Clk,
-                    Neighbors   => CurNeighbors(r*ROWSIZE + c),
+                    Neighbors   => CurNeighbors(r*COLSIZE + c),
                     Shift       => Shift,
-                    CellDataIn      => CurDataIn(r*ROWSIZE + c),
+                    CellDataIn      => CurDataIn(r*COLSIZE + c),
                     NextTimeTick    => NextTimeTick,
-                    CellDataOut     => CellData(r*ROWSIZE + c)
+                    CellDataOut     => CellData(r*COLSIZE + c)
                 );
             end generate colGen;
         end generate rowGen;

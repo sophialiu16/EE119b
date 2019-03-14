@@ -50,11 +50,11 @@ architecture TB_ARCH of CellTB is
     signal DataIn : std_logic;
     signal NextTimeTick : std_logic;
     signal DataOut : std_logic;
+    signal DataOut7 : std_logic;
+    signal DataOut69 : std_logic;
 
-    -- test signal type
-    type arrTest is array (10 downto 0) of std_logic_vector(8 downto 0);
 begin
-
+    -- test components
     UUT : CellMesh
         generic map(
             RowSize => 3,
@@ -68,14 +68,40 @@ begin
             DataOut => DataOut
         );
 
-        -- randomly test GCD
+   UUT7 : CellMesh
+        generic map(
+            RowSize => 7,
+            ColSize => 7
+        )
+        port map(
+            Clk     => Clk,
+            Shift   => Shift,
+            DataIn  => DataIn,
+            NextTimeTick    => NextTimeTick,
+            DataOut => DataOut7
+        );
+
+        UUT69 : CellMesh
+             generic map(
+                 RowSize => 6,
+                 ColSize => 9
+             )
+             port map(
+                 Clk     => Clk,
+                 Shift   => Shift,
+                 DataIn  => DataIn,
+                 NextTimeTick    => NextTimeTick,
+                 DataOut => DataOut69
+             );
+
         process
             variable  i  :  integer;        -- general loop indices
             variable  j  :  integer;
 
-            -- test a, b, gcd
+            -- test dataout vectors
             variable DataOutTest33 : std_logic_vector(0 to 8);
-
+            variable DataOutTest77 : std_logic_vector(0 to 48);
+            variable DataOutTest69 : std_logic_vector(0 to 53);
             begin
 
             -- have not yet started
@@ -150,6 +176,72 @@ begin
 			         severity  ERROR;
             end loop;
 
+            -- 7x7 testing
+            -- 5 cycles
+            for i in 0 to 22 loop
+                -- shift in data
+                Shift <= '1';
+                for j in 0 to 48 loop
+                    DataIn <= TestCycle577(i*2)(j);
+                    wait for CLK_PERIOD;
+                end loop;
+                Shift <= '0';
+
+                -- wait for five cycles
+                NextTimeTick <= '1';
+                wait for CLK_PERIOD*5;
+                NextTimeTick <= '0';
+
+                -- shift out data and check
+                DataIn <= '0'; -- shift in something
+                Shift <= '1';
+                wait for CLK_PERIOD;
+                for j in 0 to 48 loop
+                    DataOutTest77(j) := DataOut7;
+                    wait for CLK_PERIOD;
+                end loop;
+
+                assert (DataOutTest77 = TestCycle577(i*2 + 1))
+                     report  "Mesh 7x7 failure; Initial : " & integer'image(to_integer(unsigned(TestCycle577(i*2))))
+                     & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest77)))
+                     & "     Correct : " & integer'image(to_integer(unsigned(TestCycle577(i*2 + 1))))
+                     & "     Test Number : " & integer'image(i)
+                     severity  ERROR;
+            end loop;
+
+            -- 6x9 testing
+            -- 5 cycles
+            for i in 0 to 22 loop
+                -- shift in data
+                Shift <= '1';
+                for j in 0 to 53 loop
+                    DataIn <= TestCycle569(i*2)(j);
+                    wait for CLK_PERIOD;
+                end loop;
+                Shift <= '0';
+
+                -- wait for five cycles
+                NextTimeTick <= '1';
+                wait for CLK_PERIOD*5;
+                NextTimeTick <= '0';
+
+                -- shift out data and check
+                DataIn <= '0'; -- shift in something
+                Shift <= '1';
+                wait for CLK_PERIOD;
+                for j in 0 to 53 loop
+                    DataOutTest69(j) := DataOut69;
+                    wait for CLK_PERIOD;
+                end loop;
+
+                assert (DataOutTest69 = TestCycle569(i*2 + 1))
+                     report  "Mesh 6x9 failure; Initial : " & integer'image(to_integer(unsigned(TestCycle569(i*2))))
+                     & "     Final : "  &  integer'image(to_integer(unsigned(DataOutTest69)))
+                     & "     Correct : " & integer'image(to_integer(unsigned(TestCycle569(i*2 + 1))))
+                     & "     Test Number : " & integer'image(i)
+                     severity  ERROR;
+            end loop;
+
             END_SIM <= true;
             wait;
         end process;
@@ -179,6 +271,12 @@ end TB_ARCH;
 configuration TESTBENCH_FOR_CELL of CellTB is
     for TB_ARCH
 		  for UUT : CellMesh
+            use entity work.CellMesh;
+        end for;
+        for UUT7 : CellMesh
+            use entity work.CellMesh;
+        end for;
+        for UUT69 : CellMesh
             use entity work.CellMesh;
         end for;
     end for;
